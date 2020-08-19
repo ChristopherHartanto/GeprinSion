@@ -1,0 +1,2 @@
+rootProject.name='Geprin Sion'
+include ':app'
