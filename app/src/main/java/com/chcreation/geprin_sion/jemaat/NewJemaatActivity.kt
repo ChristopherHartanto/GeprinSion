@@ -1,12 +1,13 @@
-package com.chcreation.geprin_sion
+package com.chcreation.geprin_sion.jemaat
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.chcreation.geprin_sion.R
 
-class MainActivity : AppCompatActivity() {
+class NewJemaatActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_new_jemaat)
     }
 }
