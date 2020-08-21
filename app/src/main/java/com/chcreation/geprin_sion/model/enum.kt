@@ -2,6 +2,7 @@ package com.chcreation.geprin_sion.model
 
 enum class ETable{
     USER,
+    JEMAAT,
     USER_LIST,
     PRODUCT,
     MERCHANT,
@@ -65,19 +66,25 @@ enum class EAvailableMerchant{
     NAME
 }
 
-enum class ECustomer{
+enum class EJemaat{
     CREATED_DATE,
     UPDATED_DATE,
     CREATED_BY,
     UPDATED_BY,
-    NAME,
-    EMAIL,
-    PHONE,
-    ADDRESS,
+    NAMA,
+    ALAMAT,
+    GENDER,
+    GOL_DARAH,
+    TEMPAT_LAHIR,
+    TANGGAL_LAHIR,
+    NO_TEL,
     NOTE,
-    CODE,
+    BAPTIS,
+    NO_SERTIFIKAT,
+    TEMPAT_BAPTIS,
+    TANGGAL_BAPTIS,
     IMAGE,
-    STATUS_CODE
+    ID
 }
 
 enum class ETransaction{
@@ -143,13 +150,25 @@ enum class EDataType{
     FLOAT
 }
 
+enum class EGender{
+    Pria,
+    Perempuan
+}
+
+enum class EGolDarah{
+    A,
+    B,
+    O,
+    AB
+}
+
 
 enum class EMessageResult{
     SUCCESS,
     UPDATE,
     DELETE_SUCCESS,
     FAILURE,
-    FETCH_PROD_SUCCESS,
+    FETCH_JEMAAT_SUCCESS,
     FETCH_AVAIL_MERCHANT_SUCCESS,
     FETCH_MERCHANT_SUCCESS,
     FETCH_CATEGORY_SUCCESS,

@@ -75,6 +75,8 @@ fun normalClickAnimation() : AlphaAnimation = AlphaAnimation(10F,0.5F)
 
 fun dateFormat() : SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
+fun simpleDateFormat() : SimpleDateFormat = SimpleDateFormat("dd MMMM yyyy")
+
 fun getYear(convertDate: String): Int {
     val date = dateFormat().parse(convertDate)
     val calendar = Calendar.getInstance()
