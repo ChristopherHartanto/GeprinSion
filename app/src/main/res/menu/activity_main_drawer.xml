@@ -6,6 +6,6 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_jemaat"
-            android:title="Jemaat" />
+            android:title="Data Jemaat" />
     </group>
 </menu>

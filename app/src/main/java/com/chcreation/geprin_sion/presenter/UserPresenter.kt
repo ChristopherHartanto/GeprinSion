@@ -31,6 +31,7 @@ class UserPresenter(private val view: MainView, private val auth: FirebaseAuth, 
             val values  = hashMapOf(
                 EUser.NAME.toString() to name,
                 EUser.EMAIL.toString() to email,
+                EUser.ACTIVE.toString() to 0,
                 EUser.CREATED_DATE.toString() to dateFormat().format(Date()),
                 EUser.UPDATED_DATE.toString() to dateFormat().format(Date())
             )

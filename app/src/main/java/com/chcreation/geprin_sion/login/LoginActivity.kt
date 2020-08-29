@@ -20,9 +20,11 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_login.*
+import org.jetbrains.anko.alert
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.startActivity
 import org.jetbrains.anko.toast
+import org.jetbrains.anko.yesButton
 
 class LoginActivity : AppCompatActivity(), MainView {
 
@@ -78,28 +80,43 @@ class LoginActivity : AppCompatActivity(), MainView {
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+    }
+
     override fun loadData(dataSnapshot: DataSnapshot, response: String) {
         if (response == EMessageResult.FETCH_USER_SUCCESS.toString()){
             if (dataSnapshot.exists()){
                 val item = dataSnapshot.getValue(User::class.java)
 
-                setDataPreference(
-                    this,
-                    ESharedPreference.EMAIL.toString(),
-                    email,
-                    EDataType.STRING
-                )
                 if (item != null) {
-                    setDataPreference(
-                        this,
-                        ESharedPreference.NAME.toString(),
-                        item.NAME.toString(),
-                        EDataType.STRING
-                    )
+                    if (item.ACTIVE == 0){
+                        alert ("Your Account Haven't Active, Please Contact Your Administrator"){
+                            title = "Login Failed"
+
+                            yesButton {
+                                mAuth.signOut()
+                            }
+                        }.show()
+                    }
+                    else{
+                        setDataPreference(
+                            this,
+                            ESharedPreference.EMAIL.toString(),
+                            email,
+                            EDataType.STRING
+                        )
+                        setDataPreference(
+                            this,
+                            ESharedPreference.NAME.toString(),
+                            item.NAME.toString(),
+                            EDataType.STRING
+                        )
+                        toast("Login Success")
+                        startActivity<MainActivity>()
+                        finish()
+                    }
                 }
-                toast("Login Success")
-                startActivity<MainActivity>()
-                finish()
             }
         }
     }

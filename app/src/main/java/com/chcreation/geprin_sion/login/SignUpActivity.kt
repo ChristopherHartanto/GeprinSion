@@ -20,8 +20,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_sign_up.*
+import org.jetbrains.anko.alert
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.yesButton
 
 class SignUpActivity : AppCompatActivity(),MainView {
 
@@ -95,9 +97,14 @@ class SignUpActivity : AppCompatActivity(),MainView {
                         btnSignUp.isEnabled = true
                         pbSignUp.visibility = View.GONE
 
-                        startActivity<MainActivity>()
-                        finish()
-                        Toast.makeText(this, "Successfully registered ", Toast.LENGTH_LONG).show()
+                        alert ("Please Ask Administrator to Activate Your Account"){
+                            title = "Successfully registered"
+
+                            yesButton {
+                                startActivity<LoginActivity>()
+                                finish()
+                            }
+                        }.show()
                     }
                 }else {
                     btnSignUp.isEnabled = true

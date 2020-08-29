@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/nav_jemaat"
         android:name="com.chcreation.geprin_sion.jemaat.JemaatFragment"
-        android:label="@string/menu_home"
+        android:label="Data Jemaat"
         tools:layout="@layout/fragment_jemaat">
 
 <!--        <action-->

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.login.LoginActivity
+import com.chcreation.geprin_sion.util.getName
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_splash.*
 import org.jetbrains.anko.startActivity
@@ -29,7 +30,7 @@ class SplashActivity : AppCompatActivity() {
 
             override fun onFinish() {
 
-                if (mAuth.currentUser == null)
+                if (mAuth.currentUser == null || getName(this@SplashActivity) == "")
                     startActivity<LoginActivity>()
                 else
                     startActivity<MainActivity>()

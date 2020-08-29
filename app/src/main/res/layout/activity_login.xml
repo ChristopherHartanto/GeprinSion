@@ -41,6 +41,8 @@
         android:layout_height="wrap_content"
         android:text="Login"
         android:id="@+id/btnLogin"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorWhite"
         android:layout_marginVertical="10dp"/>
 
     <LinearLayout

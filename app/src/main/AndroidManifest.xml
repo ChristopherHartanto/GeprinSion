@@ -11,8 +11,10 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <uses-feature android:name="android.hardware.camera.autoFocus"
-        android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera.autoFocus"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/icon"
@@ -21,14 +23,16 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".jemaat.NewJemaatActivity"></activity>
+        <activity android:name=".jemaat.JemaatDetailActivity"></activity>
+        <activity android:name=".jemaat.ManageJemaatActivity" />
+        <activity android:name=".jemaat.NewJemaatActivity" />
         <activity
             android:name=".main.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".login.SignUpActivity" />
         <activity android:name=".login.LoginActivity" />
-        <activity android:name=".main.ErrorActivity"/>
+        <activity android:name=".main.ErrorActivity" />
         <activity android:name=".main.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,6 +40,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.example.android.geprin_sion.fileprovider"

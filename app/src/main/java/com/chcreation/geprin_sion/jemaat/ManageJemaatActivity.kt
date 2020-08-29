@@ -12,7 +12,6 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
-import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
@@ -23,6 +22,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.JemaatPresenter
@@ -41,7 +41,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
-import kotlinx.android.synthetic.main.activity_new_jemaat.*
+import kotlinx.android.synthetic.main.activity_manage_jemaat.*
 import kotlinx.android.synthetic.main.activity_new_jemaat.layoutJemaatBaptis
 import org.jetbrains.anko.sdk27.coroutines.onCheckedChange
 import org.jetbrains.anko.sdk27.coroutines.onClick
@@ -51,33 +51,17 @@ import java.io.File
 import java.io.IOException
 import java.util.*
 
-class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
+class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
 
     private var cal = Calendar.getInstance()
     private lateinit var tanggalBaptisListener : DatePickerDialog.OnDateSetListener
     private lateinit var tanggalLahirListener : DatePickerDialog.OnDateSetListener
     private lateinit var spGenderAdapter: ArrayAdapter<String>
     private lateinit var spGolDarahAdapter: ArrayAdapter<String>
-    private lateinit var spProvinsiAdapter: ArrayAdapter<String>
-    private lateinit var spKotaAdapter: ArrayAdapter<String>
-    private lateinit var spKecamatanAdapter: ArrayAdapter<String>
-    private lateinit var spKelurahanAdapter: ArrayAdapter<String>
-    private var provinsiSpinnerItems = arrayListOf<String>()
-    private var kotaSpinnerItems = arrayListOf<String>()
-    private var kecamatanSpinnerItems = arrayListOf<String>()
-    private var kelurahanSpinnerItems = arrayListOf<String>()
-    private var provinsiItems = arrayListOf<provinsi>()
-    private var kotaItems = arrayListOf<KotaKabupaten>()
-    private var kecamatanItems = arrayListOf<Kecamatan>()
-    private var kelurahanItems = arrayListOf<Kelurahan>()
     private var genderItems = arrayListOf(EGender.Pria.toString(),EGender.Perempuan.toString())
     private var golDarahItems = arrayListOf(EGolDarah.A.toString(),EGolDarah.B.toString(),EGolDarah.O.toString(),EGolDarah.AB.toString())
     private var selectedGender = EGender.Pria.toString()
     private var selectedGolDarah = EGolDarah.A.toString()
-    private var selectedProvinsi = ""
-    private var selectedKota = ""
-    private var selectedKecamatan = ""
-    private var selectedKelurahan = ""
     private lateinit var storage: StorageReference
     private var PICK_IMAGE_CAMERA  = 111
     private var CAMERA_PERMISSION  = 101
@@ -88,15 +72,14 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
     private lateinit var mDatabase : DatabaseReference
     private lateinit var presenter: JemaatPresenter
     private lateinit var mAuth: FirebaseAuth
+    private var currentJemaat = Jemaat()
+    private var currentJemaatKey = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_new_jemaat)
+        setContentView(R.layout.activity_manage_jemaat)
 
-        supportActionBar?.title = "New Jemaat"
-
-        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
-        StrictMode.setThreadPolicy(policy)
+        supportActionBar?.title = "Edit Jemaat"
 
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
@@ -104,85 +87,122 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
         storage = FirebaseStorage.getInstance().reference
         jemaatId = generateJemaatId()
         initDateListener()
-        initSpinners()
+        currentJemaatKey = intent.extras?.getInt(EJemaat.KEY.toString()) ?: 0
 
-        swJemaatBaptis.onCheckedChange { buttonView, isChecked ->
-            if (swJemaatBaptis.isChecked){
+        swMJemaatBaptis.onCheckedChange { buttonView, isChecked ->
+            if (swMJemaatBaptis.isChecked){
                 layoutJemaatBaptis.visibility = View.VISIBLE
             }else{
                 layoutJemaatBaptis.visibility = View.GONE
             }
         }
 
-        ivJemaatImage.onClick {
+        ivMJemaatImage.onClick {
             selectImage()
         }
 
-        tvJemaatTanggalBaptis.onClick {
-            DatePickerDialog(this@NewJemaatActivity,
+        tvMJemaatTanggalBaptis.onClick {
+            DatePickerDialog(this@ManageJemaatActivity,
                 tanggalBaptisListener,
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        tvJemaatTanggalLahir.onClick {
-            DatePickerDialog(this@NewJemaatActivity,
+        tvMJemaatTanggalLahir.onClick {
+            DatePickerDialog(this@ManageJemaatActivity,
                 tanggalLahirListener,
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        btnJemaatSave.onClick {
-            btnJemaatSave.startAnimation(normalClickAnimation())
-            btnJemaatSave.isEnabled = false
+        spGenderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,genderItems)
+        spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-            if (etJemaatName.text.toString() == ""){
-                btnJemaatSave.isEnabled = true
-                etJemaatName.error = "Name Must be Fill"
-            }
-            else{
-                if (filePath == null)
-                    saveJemaat("")
-                else
-                    uploadImage()
+        spMJemaatJenisKelamin.adapter = spGenderAdapter
+        spMJemaatJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
             }
 
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedGender = genderItems[position]
+            }
+
+        }
+        spMJemaatJenisKelamin.gravity = Gravity.CENTER
+
+        spGolDarahAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,golDarahItems)
+        spGolDarahAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatGolDarah.adapter = spGolDarahAdapter
+        spMJemaatGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedGolDarah = golDarahItems[position]
+            }
+
+        }
+        spMJemaatGolDarah.gravity = Gravity.CENTER
+
+        btnMJemaatSave.onClick {
+            btnMJemaatSave.startAnimation(normalClickAnimation())
+
+            if (filePath == null)
+                saveJemaat("")
+            else
+                uploadImage()
         }
     }
 
     override fun onStart() {
         super.onStart()
 
-        presenter.retrieveProvinsi()
+        val id = intent.extras?.getString(EJemaat.ID.toString(),"")
+        if (id != null) {
+            presenter.retrieveJemaatByKey(currentJemaatKey.toString())
+        }
     }
 
-    private fun saveJemaat(image: String?){
+    private fun saveJemaat(newImage: String?){
         loading()
 
-        val nama = etJemaatName.text.toString()
-        val alamat = etJemaatAlamat.text.toString()
-        val rt = etJemaatRT.text.toString()
-        val rw = etJemaatRW.text.toString()
+        val nama = etMJemaatName.text.toString()
+        val alamat = etMJemaatAlamat.text.toString()
         val golDarah = selectedGolDarah
         val jenisKelamin = selectedGender
-        val noTel = etJemaatNoHp.text.toString()
-        val note = etJemaatNote.text.toString()
-        val baptis = swJemaatBaptis.isChecked
-        val tanggalLahir = tvJemaatTanggalLahir.text.toString()
-        val tempatLahir = etJemaatTempatLahir.text.toString()
-        val tanggalBaptis = tvJemaatTanggalBaptis.text.toString()
-        val tempatBaptis = etJemaatTempatBaptis.text.toString()
-        val noSertifikat = etJemaatNoSertifikat.text.toString()
+        val noTel = etMJemaatNoHp.text.toString()
+        val note = etMJemaatNote.text.toString()
+        val baptis = swMJemaatBaptis.isChecked
+        val tanggalLahir = tvMJemaatTanggalLahir.text.toString()
+        val tempatLahir = etMJemaatTempatLahir.text.toString()
+        val tanggalBaptis = tvMJemaatTanggalBaptis.text.toString()
+        val tempatBaptis = etMJemaatTempatBaptis.text.toString()
+        val noSertifikat = etMJemaatNoSertifikat.text.toString()
 
-        presenter.createJemaat(Jemaat(nama,selectedProvinsi,selectedKota,selectedKecamatan,selectedKelurahan,rt,rw,
-            alamat,jenisKelamin,golDarah,tempatLahir,tanggalLahir,noTel,note,
+        val image = if (newImage == "") currentJemaat.IMAGE else newImage
+
+        presenter.updateJemaat(Jemaat(nama,"","","","","","",alamat,jenisKelamin,golDarah,tempatLahir,tanggalLahir,noTel,note,
             baptis,noSertifikat,tempatBaptis,tanggalBaptis,
+            currentJemaat.CREATED_DATE,
             dateFormat().format(Date()),
-            dateFormat().format(Date()),
-            mAuth.currentUser!!.uid,
-            mAuth.currentUser!!.uid,image,"",EStatusCode.ACTIVE.toString()))
+            currentJemaat.CREATED_BY,
+            mAuth.currentUser!!.uid,image,currentJemaat.ID), currentJemaatKey.toString()
+        )
     }
 
     private fun uploadImage(){
@@ -208,16 +228,13 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
                 } else {
                     toast("Failed to Save Image")
                     endLoading()
-                    btnJemaatSave.isEnabled = true
                 }
             }.addOnFailureListener{
                 toast("Error : ${it.message}")
                 endLoading()
-                btnJemaatSave.isEnabled = true
             }
         }else{
             Toast.makeText(this, "Please Upload an Image", Toast.LENGTH_SHORT).show()
-            btnJemaatSave.isEnabled = true
         }
     }
 
@@ -251,9 +268,9 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
                 dialogInterface, i ->
             when(i){
                 0 -> {
-                    if (ContextCompat.checkSelfPermission(this@NewJemaatActivity, android.Manifest.permission.CAMERA)
+                    if (ContextCompat.checkSelfPermission(this@ManageJemaatActivity, android.Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED)
-                        ActivityCompat.requestPermissions(this@NewJemaatActivity,
+                        ActivityCompat.requestPermissions(this@ManageJemaatActivity,
                             arrayOf(android.Manifest.permission.CAMERA),CAMERA_PERMISSION
                         )
                     else
@@ -261,9 +278,9 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
 
                 }
                 1 -> {
-                    if (ContextCompat.checkSelfPermission(this@NewJemaatActivity, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    if (ContextCompat.checkSelfPermission(this@ManageJemaatActivity, android.Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED)
-                        ActivityCompat.requestPermissions(this@NewJemaatActivity,
+                        ActivityCompat.requestPermissions(this@ManageJemaatActivity,
                             arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,android.Manifest.permission.WRITE_EXTERNAL_STORAGE),READ_PERMISION
                         )
                     else
@@ -318,7 +335,7 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
                         contentResolver,
                         filePath
                     )
-                ivJemaatImage.setImageBitmap(rotateImage(bitmap))
+                ivMJemaatImage.setImageBitmap(rotateImage(bitmap))
             } catch (e: Exception) {
                 filePath = null
                 showError(this,e.message.toString())
@@ -335,7 +352,7 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
                         contentResolver,
                         filePath
                     )
-                ivJemaatImage.setImageBitmap(rotateImage(bitmap))
+                ivMJemaatImage.setImageBitmap(rotateImage(bitmap))
             } catch (e: IOException) { // Log the exception
                 showError(this,e.message.toString())
                 e.printStackTrace()
@@ -413,153 +430,13 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
         return "J${mDatabase.push().key.toString()}"
     }
 
-    private fun initSpinners(){
-        spGenderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,genderItems)
-        spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatJenisKelamin.adapter = spGenderAdapter
-        spJemaatJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedGender = genderItems[position]
-            }
-
-        }
-        spJemaatJenisKelamin.gravity = Gravity.CENTER
-
-        // ---- GOL DARAH SPINNER
-
-        spGolDarahAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,golDarahItems)
-        spGolDarahAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatGolDarah.adapter = spGolDarahAdapter
-        spJemaatGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedGolDarah = golDarahItems[position]
-            }
-
-        }
-        spJemaatGolDarah.gravity = Gravity.CENTER
-
-        // Provinsi Spinner
-        spProvinsiAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,provinsiSpinnerItems)
-        spProvinsiAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatProvinsi.adapter = spProvinsiAdapter
-        spJemaatProvinsi.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedProvinsi = provinsiSpinnerItems[position]
-                if (selectedProvinsi != "")
-                    presenter.retrieveKotaKabupaten(provinsiItems[position].id.toString())
-            }
-
-        }
-        spJemaatProvinsi.gravity = Gravity.CENTER
-
-        // kota spinner
-        spKotaAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kotaSpinnerItems)
-        spKotaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatKotaKabupaten.adapter = spKotaAdapter
-        spJemaatKotaKabupaten.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedKota = kotaSpinnerItems[position]
-                if (selectedKota != "")
-                    presenter.retrieveKecamatan(kotaItems[position].id.toString())
-            }
-
-        }
-        spJemaatKotaKabupaten.gravity = Gravity.CENTER
-
-        // kecamatan spinner
-        spKecamatanAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kecamatanSpinnerItems)
-        spKecamatanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatKecamatan.adapter = spKecamatanAdapter
-        spJemaatKecamatan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedKecamatan = kecamatanSpinnerItems[position]
-                if (selectedKecamatan != "")
-                    presenter.retrieveKelurahan(kecamatanItems[position].id.toString())
-            }
-
-        }
-        spJemaatKecamatan.gravity = Gravity.CENTER
-
-        // kelurahan
-        spKelurahanAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kelurahanSpinnerItems)
-        spKelurahanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatKelurahan.adapter = spKelurahanAdapter
-        spJemaatKelurahan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedKelurahan = kelurahanSpinnerItems[position]
-            }
-
-        }
-        spJemaatKelurahan.gravity = Gravity.CENTER
-    }
-
     private fun initDateListener(){
         tanggalBaptisListener =
             DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, monthOfYear)
                 cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                tvJemaatTanggalBaptis.text = simpleDateFormat().format(cal.time)
+                tvMJemaatTanggalBaptis.text = simpleDateFormat().format(cal.time)
             }
 
         tanggalLahirListener =
@@ -567,74 +444,86 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, monthOfYear)
                 cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                tvJemaatTanggalLahir.text = simpleDateFormat().format(cal.time)
+                tvMJemaatTanggalLahir.text = simpleDateFormat().format(cal.time)
             }
     }
 
+    private fun fetchData(){
+        etMJemaatName.setText(currentJemaat.NAMA)
+        etMJemaatAlamat.setText(currentJemaat.ALAMAT)
+        etMJemaatNoHp.setText(currentJemaat.NO_TEL)
+        etMJemaatNote.setText(currentJemaat.NOTE)
+        spMJemaatGolDarah.setSelection(golDarahItems.indexOf(currentJemaat.GOL_DARAH))
+        spMJemaatJenisKelamin.setSelection(genderItems.indexOf(currentJemaat.GENDER))
+        swMJemaatBaptis.isChecked = currentJemaat.BAPTIS!!
+        etMJemaatTempatBaptis.setText(currentJemaat.TEMPAT_BAPTIS)
+        tvMJemaatTanggalLahir.text = currentJemaat.TANGGAL_LAHIR
+        etMJemaatTempatLahir.setText(currentJemaat.TEMPAT_LAHIR)
+        tvMJemaatTanggalBaptis.text = currentJemaat.TANGGAL_BAPTIS
+        etMJemaatNoSertifikat.setText(currentJemaat.NO_SERTIFIKAT)
+        etMJemaatCreatedDate.setText(currentJemaat.CREATED_DATE)
+        etMJemaatUpdatedDate.setText(currentJemaat.UPDATED_DATE)
+
+        presenter.getUserName(currentJemaat.CREATED_BY.toString()){
+            etMJemaatCreatedBy.setText(it)
+        }
+        presenter.getUserName(currentJemaat.UPDATED_BY.toString()){
+            etMJemaatUpdatedBy.setText(it)
+        }
+        if (currentJemaat.IMAGE != "")
+            Glide.with(this).load(currentJemaat.IMAGE).into(ivMJemaatImage)
+
+    }
+
     private fun loading(){
-        pbJemaat.visibility = View.VISIBLE
+        pbMJemaat.visibility = View.VISIBLE
     }
 
     private fun endLoading(){
-        pbJemaat.visibility = View.GONE
+        pbMJemaat.visibility = View.GONE
     }
 
     override fun loadData(dataSnapshot: DataSnapshot, response: String) {
+        if (response == EMessageResult.FETCH_JEMAAT_BY_KEY_SUCCESS.toString()){
+            if (dataSnapshot.exists()){
+                val item = dataSnapshot.getValue(Jemaat::class.java)
+                if (item != null) {
+                    currentJemaat = item
 
+                    fetchData()
+                }
+            }
+        }
     }
 
     override fun response(message: String) {
         if (message == EMessageResult.SUCCESS.toString()){
             toast("Save Success")
-            btnJemaatSave.isEnabled = true
             finish()
+            btnMJemaatSave.isEnabled = true
             endLoading()
         }
         else{
-            btnJemaatSave.isEnabled = true
+            btnMJemaatSave.isEnabled = true
             toast(message)
             endLoading()
         }
     }
 
     override fun showProvinsi(provinsi: List<provinsi>) {
-        provinsiItems.clear()
-        provinsiSpinnerItems.clear()
-        provinsiItems.addAll(provinsi)
-        for (data in provinsiItems){
-            provinsiSpinnerItems.add(data.nama.toString())
-        }
-        spProvinsiAdapter.notifyDataSetChanged()
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun showKotaKabupaten(kotaKabupaten: List<KotaKabupaten>) {
-        kotaItems.clear()
-        kotaSpinnerItems.clear()
-        kotaItems.addAll(kotaKabupaten)
-        for (data in kotaItems){
-            kotaSpinnerItems.add(data.nama.toString())
-        }
-        spKotaAdapter.notifyDataSetChanged()
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-
     override fun showKecamatan(kecamatan: List<Kecamatan>) {
-        kecamatanItems.clear()
-        kecamatanSpinnerItems.clear()
-        kecamatanItems.addAll(kecamatan)
-        for (data in kecamatanItems){
-            kecamatanSpinnerItems.add(data.nama.toString())
-        }
-        spKecamatanAdapter.notifyDataSetChanged()
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun showKelurahan(kelurahan: List<Kelurahan>) {
-        kelurahanItems.clear()
-        kelurahanSpinnerItems.clear()
-        kelurahanItems.addAll(kelurahan)
-        for (data in kelurahanItems){
-            kelurahanSpinnerItems.add(data.nama.toString())
-        }
-        spKelurahanAdapter.notifyDataSetChanged()
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
+

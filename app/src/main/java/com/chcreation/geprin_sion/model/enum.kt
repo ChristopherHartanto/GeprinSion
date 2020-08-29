@@ -72,6 +72,12 @@ enum class EJemaat{
     CREATED_BY,
     UPDATED_BY,
     NAMA,
+    PROVINSI,
+    KOTA,
+    KECAMATAN,
+    KELURAHAN,
+    RT,
+    RW,
     ALAMAT,
     GENDER,
     GOL_DARAH,
@@ -84,7 +90,9 @@ enum class EJemaat{
     TEMPAT_BAPTIS,
     TANGGAL_BAPTIS,
     IMAGE,
-    ID
+    ID,
+    KEY,
+    STATUS
 }
 
 enum class ETransaction{
@@ -124,6 +132,7 @@ enum class EUser{
     UPDATED_DATE,
     NAME,
     EMAIL,
+    ACTIVE,
     ADDRESS,
     TEL,
     IMAGE,
@@ -151,11 +160,19 @@ enum class EDataType{
 }
 
 enum class EGender{
+    All,
     Pria,
     Perempuan
 }
 
+enum class EBaptis{
+    All,
+    Yes,
+    No,
+}
+
 enum class EGolDarah{
+    All,
     A,
     B,
     O,
@@ -169,19 +186,9 @@ enum class EMessageResult{
     DELETE_SUCCESS,
     FAILURE,
     FETCH_JEMAAT_SUCCESS,
-    FETCH_AVAIL_MERCHANT_SUCCESS,
-    FETCH_MERCHANT_SUCCESS,
-    FETCH_CATEGORY_SUCCESS,
-    FETCH_CUSTOMER_SUCCESS,
-    FETCH_CUSTOMER_TRANSACTION_SUCCESS,
-    FETCH_TRANS_SUCCESS,
-    FETCH_TRANS_LIST_PAYMENT_SUCCESS,
-    FETCH_STOCK_MOVEMENT_SUCCESS,
-    FETCH_PEND_PAYMENT_SUCCESS,
+    FETCH_JEMAAT_BY_KEY_SUCCESS,
     FETCH_USER_SUCCESS,
-    FETCH_USER_LIST_SUCCESS,
-    CREATE_INVITATION_SUCCESS,
-    FETCH_INVITATION_SUCCESS
+    FETCH_USER_LIST_SUCCESS
 }
 
 enum class EPaymentMethod{

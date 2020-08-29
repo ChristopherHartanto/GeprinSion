@@ -3,6 +3,11 @@ package com.chcreation.geprin_sion.main
 import android.os.Bundle
 import android.os.Handler
 import android.view.Menu
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.navigation.NavigationView
@@ -17,12 +22,20 @@ import androidx.appcompat.widget.Toolbar
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.jemaat.JemaatFragment.Companion.active
 import com.chcreation.geprin_sion.util.RESULT_CLOSE_ALL
+import com.chcreation.geprin_sion.util.getName
 import org.jetbrains.anko.toast
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var doubleBackToExitPressedOnce = false
+    private lateinit var view : View
+    private lateinit var tvNavHeaderMerchantName : TextView
+    private lateinit var ivNavHeader : ImageView
+    private lateinit var tvNavHeaderFirstName : TextView
+    private lateinit var tvUserName : TextView
+    private lateinit var layoutNavHeaderDefaultImage: FrameLayout
+    private lateinit var layoutNavHeader: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +49,10 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
+        System.setProperty("org.apache.poi.javax.xml.stream.XMLInputFactory", "com.fasterxml.aalto.stax.InputFactoryImpl");
+        System.setProperty("org.apache.poi.javax.xml.stream.XMLOutputFactory", "com.fasterxml.aalto.stax.OutputFactoryImpl");
+        System.setProperty("org.apache.poi.javax.xml.stream.XMLEventFactory", "com.fasterxml.aalto.stax.EventFactoryImpl");
+
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment)
@@ -46,6 +63,13 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_jemaat
             ), drawerLayout
         )
+
+        view = navView.getHeaderView(0)
+        tvUserName = view.findViewById<TextView>(R.id.tvMainUserName)
+        ivNavHeader = view.findViewById<ImageView>(R.id.imageView)
+
+        tvUserName.text = getName(this)
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
@@ -66,11 +90,11 @@ class MainActivity : AppCompatActivity() {
         Handler().postDelayed(Runnable { doubleBackToExitPressedOnce = false }, 2000)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
+//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        menuInflater.inflate(R.menu.main, menu)
+//        return true
+//    }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
