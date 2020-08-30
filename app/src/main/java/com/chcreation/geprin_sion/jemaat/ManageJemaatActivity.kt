@@ -12,6 +12,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
@@ -42,6 +43,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.activity_manage_jemaat.*
+import kotlinx.android.synthetic.main.activity_new_jemaat.*
 import kotlinx.android.synthetic.main.activity_new_jemaat.layoutJemaatBaptis
 import org.jetbrains.anko.sdk27.coroutines.onCheckedChange
 import org.jetbrains.anko.sdk27.coroutines.onClick
@@ -58,10 +60,26 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     private lateinit var tanggalLahirListener : DatePickerDialog.OnDateSetListener
     private lateinit var spGenderAdapter: ArrayAdapter<String>
     private lateinit var spGolDarahAdapter: ArrayAdapter<String>
+    private lateinit var spProvinsiAdapter: ArrayAdapter<String>
+    private lateinit var spKotaAdapter: ArrayAdapter<String>
+    private lateinit var spKecamatanAdapter: ArrayAdapter<String>
+    private lateinit var spKelurahanAdapter: ArrayAdapter<String>
+    private var provinsiSpinnerItems = arrayListOf<String>()
+    private var kotaSpinnerItems = arrayListOf<String>()
+    private var kecamatanSpinnerItems = arrayListOf<String>()
+    private var kelurahanSpinnerItems = arrayListOf<String>()
+    private var provinsiItems = arrayListOf<provinsi>()
+    private var kotaItems = arrayListOf<KotaKabupaten>()
+    private var kecamatanItems = arrayListOf<Kecamatan>()
+    private var kelurahanItems = arrayListOf<Kelurahan>()
     private var genderItems = arrayListOf(EGender.Pria.toString(),EGender.Perempuan.toString())
     private var golDarahItems = arrayListOf(EGolDarah.A.toString(),EGolDarah.B.toString(),EGolDarah.O.toString(),EGolDarah.AB.toString())
     private var selectedGender = EGender.Pria.toString()
     private var selectedGolDarah = EGolDarah.A.toString()
+    private var selectedProvinsi = ""
+    private var selectedKota = ""
+    private var selectedKecamatan = ""
+    private var selectedKelurahan = ""
     private lateinit var storage: StorageReference
     private var PICK_IMAGE_CAMERA  = 111
     private var CAMERA_PERMISSION  = 101
@@ -73,6 +91,10 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     private lateinit var presenter: JemaatPresenter
     private lateinit var mAuth: FirebaseAuth
     private var currentJemaat = Jemaat()
+    private var loadProvinsi = false
+    private var loadKota = false
+    private var loadKecamatan = false
+    private var loadKelurahan = false
     private var currentJemaatKey = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,12 +103,16 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
 
         supportActionBar?.title = "Edit Jemaat"
 
+        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
         presenter = JemaatPresenter(this,this,mAuth,mDatabase, this)
         storage = FirebaseStorage.getInstance().reference
         jemaatId = generateJemaatId()
         initDateListener()
+        initSpinners()
         currentJemaatKey = intent.extras?.getInt(EJemaat.KEY.toString()) ?: 0
 
         swMJemaatBaptis.onCheckedChange { buttonView, isChecked ->
@@ -116,48 +142,6 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)).show()
         }
-
-        spGenderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,genderItems)
-        spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spMJemaatJenisKelamin.adapter = spGenderAdapter
-        spMJemaatJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedGender = genderItems[position]
-            }
-
-        }
-        spMJemaatJenisKelamin.gravity = Gravity.CENTER
-
-        spGolDarahAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,golDarahItems)
-        spGolDarahAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spMJemaatGolDarah.adapter = spGolDarahAdapter
-        spMJemaatGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedGolDarah = golDarahItems[position]
-            }
-
-        }
-        spMJemaatGolDarah.gravity = Gravity.CENTER
 
         btnMJemaatSave.onClick {
             btnMJemaatSave.startAnimation(normalClickAnimation())
@@ -193,10 +177,12 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
         val tanggalBaptis = tvMJemaatTanggalBaptis.text.toString()
         val tempatBaptis = etMJemaatTempatBaptis.text.toString()
         val noSertifikat = etMJemaatNoSertifikat.text.toString()
+        val rt = etMJemaatRT.text.toString()
+        val rw = etMJemaatRW.text.toString()
 
         val image = if (newImage == "") currentJemaat.IMAGE else newImage
 
-        presenter.updateJemaat(Jemaat(nama,"","","","","","",alamat,jenisKelamin,golDarah,tempatLahir,tanggalLahir,noTel,note,
+        presenter.updateJemaat(Jemaat(nama,selectedProvinsi,selectedKota,selectedKecamatan,selectedKelurahan,rt,rw,alamat,jenisKelamin,golDarah,tempatLahir,tanggalLahir,noTel,note,
             baptis,noSertifikat,tempatBaptis,tanggalBaptis,
             currentJemaat.CREATED_DATE,
             dateFormat().format(Date()),
@@ -430,6 +416,143 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
         return "J${mDatabase.push().key.toString()}"
     }
 
+    private fun initSpinners(){
+        spGenderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,genderItems)
+        spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatJenisKelamin.adapter = spGenderAdapter
+        spMJemaatJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedGender = genderItems[position]
+            }
+
+        }
+        spMJemaatJenisKelamin.gravity = Gravity.CENTER
+
+        spGolDarahAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,golDarahItems)
+        spGolDarahAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatGolDarah.adapter = spGolDarahAdapter
+        spMJemaatGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedGolDarah = golDarahItems[position]
+            }
+
+        }
+        spMJemaatGolDarah.gravity = Gravity.CENTER
+
+        spProvinsiAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,provinsiSpinnerItems)
+        spProvinsiAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatProvinsi.adapter = spProvinsiAdapter
+        spMJemaatProvinsi.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedProvinsi = provinsiSpinnerItems[position]
+                if (selectedProvinsi != "")
+                    presenter.retrieveKotaKabupaten(provinsiItems[position].id.toString())
+            }
+
+        }
+        spMJemaatProvinsi.gravity = Gravity.CENTER
+
+        // kota spinner
+        spKotaAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kotaSpinnerItems)
+        spKotaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatKotaKabupaten.adapter = spKotaAdapter
+        spMJemaatKotaKabupaten.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedKota = kotaSpinnerItems[position]
+                if (selectedKota != "")
+                    presenter.retrieveKecamatan(kotaItems[position].id.toString())
+            }
+
+        }
+        spMJemaatKotaKabupaten.gravity = Gravity.CENTER
+
+        // kecamatan spinner
+        spKecamatanAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kecamatanSpinnerItems)
+        spKecamatanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatKecamatan.adapter = spKecamatanAdapter
+        spMJemaatKecamatan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedKecamatan = kecamatanSpinnerItems[position]
+                if (selectedKecamatan != "")
+                    presenter.retrieveKelurahan(kecamatanItems[position].id.toString())
+            }
+
+        }
+        spMJemaatKecamatan.gravity = Gravity.CENTER
+
+        // kelurahan
+        spKelurahanAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kelurahanSpinnerItems)
+        spKelurahanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spMJemaatKelurahan.adapter = spKelurahanAdapter
+        spMJemaatKelurahan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedKelurahan = kelurahanSpinnerItems[position]
+            }
+
+        }
+        spMJemaatKelurahan.gravity = Gravity.CENTER
+    }
+
     private fun initDateListener(){
         tanggalBaptisListener =
             DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
@@ -464,6 +587,9 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
         etMJemaatCreatedDate.setText(currentJemaat.CREATED_DATE)
         etMJemaatUpdatedDate.setText(currentJemaat.UPDATED_DATE)
 
+        etMJemaatRT.setText(currentJemaat.RT)
+        etMJemaatRW.setText(currentJemaat.RW)
+
         presenter.getUserName(currentJemaat.CREATED_BY.toString()){
             etMJemaatCreatedBy.setText(it)
         }
@@ -489,7 +615,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
                 val item = dataSnapshot.getValue(Jemaat::class.java)
                 if (item != null) {
                     currentJemaat = item
-
+                    presenter.retrieveProvinsi()
                     fetchData()
                 }
             }
@@ -511,19 +637,60 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     }
 
     override fun showProvinsi(provinsi: List<provinsi>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        provinsiItems.clear()
+        provinsiSpinnerItems.clear()
+        provinsiItems.addAll(provinsi)
+        for (data in provinsiItems){
+            provinsiSpinnerItems.add(data.nama.toString())
+        }
+        if (!loadProvinsi){
+            spMJemaatProvinsi.setSelection(provinsiSpinnerItems.indexOf(currentJemaat.PROVINSI))
+            loadProvinsi = true
+        }
+        spProvinsiAdapter.notifyDataSetChanged()
     }
 
     override fun showKotaKabupaten(kotaKabupaten: List<KotaKabupaten>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        kotaItems.clear()
+        kotaSpinnerItems.clear()
+        kotaItems.addAll(kotaKabupaten)
+        for (data in kotaItems){
+            kotaSpinnerItems.add(data.nama.toString())
+        }
+        if (!loadKota){
+            spMJemaatKotaKabupaten.setSelection(kotaSpinnerItems.indexOf(currentJemaat.KOTA))
+            loadKota = true
+        }
+        spKotaAdapter.notifyDataSetChanged()
     }
 
+
     override fun showKecamatan(kecamatan: List<Kecamatan>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        kecamatanItems.clear()
+        kecamatanSpinnerItems.clear()
+        kecamatanItems.addAll(kecamatan)
+        for (data in kecamatanItems){
+            kecamatanSpinnerItems.add(data.nama.toString())
+        }
+        if (!loadKecamatan){
+            spMJemaatKecamatan.setSelection(kecamatanSpinnerItems.indexOf(currentJemaat.KECAMATAN))
+            loadKecamatan = true
+        }
+        spKecamatanAdapter.notifyDataSetChanged()
     }
 
     override fun showKelurahan(kelurahan: List<Kelurahan>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        kelurahanItems.clear()
+        kelurahanSpinnerItems.clear()
+        kelurahanItems.addAll(kelurahan)
+        for (data in kelurahanItems){
+            kelurahanSpinnerItems.add(data.nama.toString())
+        }
+        if (!loadKelurahan){
+            spMJemaatKelurahan.setSelection(kelurahanSpinnerItems.indexOf(currentJemaat.KELURAHAN))
+            loadKelurahan = true
+        }
+        spKelurahanAdapter.notifyDataSetChanged()
     }
 }
 

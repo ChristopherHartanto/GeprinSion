@@ -10,14 +10,43 @@
     tools:context=".main.SplashActivity">
 
     <ImageView
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:src="@drawable/icon"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorBlack"
+        android:text="Geprin Sion Tanjungpinang"
+        android:layout_marginVertical="10dp"
+        android:textSize="16sp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/colorBlack"
         android:id="@+id/tvSplashVersion"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/pbSplash"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textColor="@color/colorBlack"
+            android:textSize="12sp"
+            android:id="@+id/tvSplashLoading"/>
+    </LinearLayout>
 
 </LinearLayout>

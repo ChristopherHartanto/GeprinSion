@@ -20,11 +20,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_login.*
-import org.jetbrains.anko.alert
+import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.toast
-import org.jetbrains.anko.yesButton
 
 class LoginActivity : AppCompatActivity(), MainView {
 
@@ -45,12 +42,36 @@ class LoginActivity : AppCompatActivity(), MainView {
 
         btnLogin.onClick {
             btnLogin.startAnimation(normalClickAnimation())
+            pbLogin.visibility = View.VISIBLE
             login()
         }
 
         tvLoginRegister.onClick {
-            startActivity<SignUpActivity>()
+            tvLoginRegister.startAnimation(normalClickAnimation())
             finish()
+            startActivity<SignUpActivity>()
+        }
+
+        tvLoginResetPassword.onClick {
+            tvLoginResetPassword.startAnimation(normalClickAnimation())
+
+            val email = etLoginEmail.text.toString()
+            if (email == "")
+                toast("Please Fill Email Address to Reset")
+            else{
+                alert ("Is the Email Correct?\nWe'll be Send Reset Link Through Email"){
+                    title = "Reset Password"
+                    yesButton {
+
+                        mAuth.sendPasswordResetEmail(email).addOnSuccessListener {
+                            toast("Email Sent")
+                        }.addOnFailureListener{
+                            toast("Reset Failed")
+                        }
+                    }
+                    noButton {  }
+                }.show()
+            }
         }
     }
 
@@ -81,7 +102,13 @@ class LoginActivity : AppCompatActivity(), MainView {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
+        alert ("Are You Sure Want to Quit?"){
+            title = "Quit"
+            yesButton {
+                super.onBackPressed()
+            }
+            noButton {  }
+        }.show()
     }
 
     override fun loadData(dataSnapshot: DataSnapshot, response: String) {
@@ -118,10 +145,12 @@ class LoginActivity : AppCompatActivity(), MainView {
                     }
                 }
             }
+            pbLogin.visibility = View.GONE
         }
     }
 
     override fun response(message: String) {
         toast(message)
+        pbLogin.visibility = View.GONE
     }
 }

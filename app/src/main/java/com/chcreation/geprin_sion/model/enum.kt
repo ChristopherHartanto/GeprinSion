@@ -3,18 +3,10 @@ package com.chcreation.geprin_sion.model
 enum class ETable{
     USER,
     JEMAAT,
-    USER_LIST,
-    PRODUCT,
+    ADMIN,
+    CONTENT,
     MERCHANT,
-    AVAILABLE_MERCHANT,
-    CUSTOMER,
-    CAT,
-    TRANSACTION,
-    PAYMENT,
-    ENQUIRY,
-    STOCK_MOVEMENT,
-    USER_ACCEPTANCE,
-    ABOUT
+    LIKE
 }
 
 enum class EAbout{
@@ -95,36 +87,23 @@ enum class EJemaat{
     STATUS
 }
 
-enum class ETransaction{
-    CREATED_DATE,
-    UPDATED_DATE,
-    CREATED_BY,
-    UPDATED_BY,
-    TOTAL_PRICE,
-    TOTAL_OUTSTANDING,
-    DISCOUNT,
-    TAX,
-    PAYMENT_METHOD,
-    DETAIL,
-    CUST_CODE,
-    NOTE,
-    TRANS_CODE,
-    USER_CODE,
-    STATUS_CODE
+enum class ELike{
+    CONTENT_ID
 }
 
-enum class E_Enquiry{
+enum class EContent{
     CREATED_DATE,
     UPDATED_DATE,
     CREATED_BY,
     UPDATED_BY,
-    TRANS_KEY,
-    CUST_CODE,
-    PROD_KEY,
-    PROD_CODE,
-    MANAGE_STOCK,
-    STOCK,
-    STATUS_CODE
+    TOTAL_LIKE,
+    IMAGE_CONTENT,
+    LINK,
+    CAPTION,
+    USER_CODE,
+    USER_NAME,
+    STATUS,
+    KEY
 }
 
 enum class EUser{
@@ -136,7 +115,8 @@ enum class EUser{
     ADDRESS,
     TEL,
     IMAGE,
-    CODE
+    CODE,
+    STATUS
 }
 
 enum class EPerson{
@@ -187,8 +167,11 @@ enum class EMessageResult{
     FAILURE,
     FETCH_JEMAAT_SUCCESS,
     FETCH_JEMAAT_BY_KEY_SUCCESS,
+    FETCH_LIKE_SUCCESS,
     FETCH_USER_SUCCESS,
-    FETCH_USER_LIST_SUCCESS
+    FETCH_ADMIN_SUCCESS,
+    FETCH_USER_LIST_SUCCESS,
+    FETCH_CONTENT_SUCCESS
 }
 
 enum class EPaymentMethod{
@@ -207,6 +190,8 @@ enum class EStatusCode{
 
 enum class EStatusUser{
     ACTIVE,
+    ADMIN,
+    USER,
     DE_ACTIVE
 }
 

@@ -88,9 +88,7 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
         return inflater.inflate(R.layout.fragment_jemaat, container, false)
     }
 
-    companion object{
-        var active = false // to end application
-    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -160,15 +158,6 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
         super.onStart()
 
         presenter.retrieveJemaats()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        active = true
-    }
-    override fun onPause() {
-        super.onPause()
-        active = false
     }
 
     override fun onRequestPermissionsResult(
@@ -301,29 +290,39 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
                 val sheet = workbook.createSheet("Data Jemaat")
                 var row = sheet.createRow(0)
                 row.createCell(0).setCellValue("Nama")
-                row.createCell(1).setCellValue("Alamat")
-                row.createCell(2).setCellValue("Jenis Kelamin")
-                row.createCell(3).setCellValue("Golongan Darah")
-                row.createCell(4).setCellValue("TTL")
-                row.createCell(5).setCellValue("No Telepon")
-                row.createCell(6).setCellValue("No Sertifikat Baptis")
-                row.createCell(7).setCellValue("Tempat Baptis")
-                row.createCell(8).setCellValue("Tanggal Baptis")
-                row.createCell(9).setCellValue("Catatan")
+                row.createCell(1).setCellValue("Jenis Kelamin")
+                row.createCell(2).setCellValue("Golongan Darah")
+                row.createCell(3).setCellValue("TTL")
+                row.createCell(4).setCellValue("No Telepon")
+                row.createCell(5).setCellValue("Alamat")
+                row.createCell(6).setCellValue("Provinsi")
+                row.createCell(7).setCellValue("Kota/Kabupaten")
+                row.createCell(8).setCellValue("Kecamatan")
+                row.createCell(9).setCellValue("Kelurahan")
+                row.createCell(10).setCellValue("RT/RW")
+                row.createCell(11).setCellValue("No Sertifikat Baptis")
+                row.createCell(12).setCellValue("Tempat Baptis")
+                row.createCell(13).setCellValue("Tanggal Baptis")
+                row.createCell(14).setCellValue("Catatan")
 
                 for ((index,data) in filteredJemaatItems.withIndex()){
                     row = sheet.createRow(index+1)
 
                     row.createCell(0).setCellValue(data.NAMA)
-                    row.createCell(1).setCellValue(data.ALAMAT)
-                    row.createCell(2).setCellValue(data.GENDER)
-                    row.createCell(3).setCellValue(data.GOL_DARAH)
-                    row.createCell(4).setCellValue("${data.TEMPAT_LAHIR}, ${data.TANGGAL_LAHIR}")
-                    row.createCell(5).setCellValue(data.NO_TEL)
-                    row.createCell(6).setCellValue(data.NO_SERTIFIKAT)
-                    row.createCell(7).setCellValue(data.TEMPAT_BAPTIS)
-                    row.createCell(8).setCellValue(data.TANGGAL_BAPTIS)
-                    row.createCell(9).setCellValue(data.NOTE)
+                    row.createCell(1).setCellValue(data.GENDER)
+                    row.createCell(2).setCellValue(data.GOL_DARAH)
+                    row.createCell(3).setCellValue("${data.TEMPAT_LAHIR}, ${data.TANGGAL_LAHIR}")
+                    row.createCell(4).setCellValue(data.NO_TEL)
+                    row.createCell(5).setCellValue(data.ALAMAT)
+                    row.createCell(6).setCellValue(data.PROVINSI)
+                    row.createCell(7).setCellValue(data.KOTA)
+                    row.createCell(8).setCellValue(data.KECAMATAN)
+                    row.createCell(9).setCellValue(data.KELURAHAN)
+                    row.createCell(10).setCellValue("${data.RT}/${data.RW}")
+                    row.createCell(11).setCellValue(data.NO_SERTIFIKAT)
+                    row.createCell(12).setCellValue(data.TEMPAT_BAPTIS)
+                    row.createCell(13).setCellValue(data.TANGGAL_BAPTIS)
+                    row.createCell(14).setCellValue(data.NOTE)
                 }
 
                 workbook.write(fileOutputStream)

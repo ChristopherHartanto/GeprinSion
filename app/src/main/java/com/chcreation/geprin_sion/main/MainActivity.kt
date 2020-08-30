@@ -20,10 +20,17 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.chcreation.geprin_sion.R
-import com.chcreation.geprin_sion.jemaat.JemaatFragment.Companion.active
+import com.chcreation.geprin_sion.home.HomeFragment.Companion.active
+import com.chcreation.geprin_sion.login.LoginActivity
 import com.chcreation.geprin_sion.util.RESULT_CLOSE_ALL
 import com.chcreation.geprin_sion.util.getName
-import org.jetbrains.anko.toast
+import com.chcreation.geprin_sion.util.normalClickAnimation
+import com.chcreation.geprin_sion.util.removeAllSharedPreference
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import org.jetbrains.anko.*
+import org.jetbrains.anko.sdk27.coroutines.onClick
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,10 +39,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var view : View
     private lateinit var tvNavHeaderMerchantName : TextView
     private lateinit var ivNavHeader : ImageView
+    private lateinit var ivNavLogout : ImageView
     private lateinit var tvNavHeaderFirstName : TextView
     private lateinit var tvUserName : TextView
     private lateinit var layoutNavHeaderDefaultImage: FrameLayout
     private lateinit var layoutNavHeader: LinearLayout
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var mDatabase : DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +58,8 @@ class MainActivity : AppCompatActivity() {
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
+        mAuth = FirebaseAuth.getInstance()
+        mDatabase = FirebaseDatabase.getInstance().reference
 
         System.setProperty("org.apache.poi.javax.xml.stream.XMLInputFactory", "com.fasterxml.aalto.stax.InputFactoryImpl");
         System.setProperty("org.apache.poi.javax.xml.stream.XMLOutputFactory", "com.fasterxml.aalto.stax.OutputFactoryImpl");
@@ -60,15 +72,30 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_jemaat
+                R.id.nav_home,R.id.nav_jemaat
             ), drawerLayout
         )
 
         view = navView.getHeaderView(0)
         tvUserName = view.findViewById<TextView>(R.id.tvMainUserName)
         ivNavHeader = view.findViewById<ImageView>(R.id.imageView)
+        ivNavLogout = view.findViewById<ImageView>(R.id.logOut)
 
         tvUserName.text = getName(this)
+
+        ivNavLogout.onClick {
+            ivNavLogout.startAnimation(normalClickAnimation())
+            alert("Do You Want to Logout ?") {
+                title = "Logout"
+                yesButton {
+                    removeAllSharedPreference(this@MainActivity)
+                    mAuth.signOut()
+                    startActivity<LoginActivity>()
+                    finish()
+                }
+                noButton {  }
+            }.show()
+        }
 
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)

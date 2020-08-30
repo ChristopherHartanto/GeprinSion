@@ -1,10 +1,7 @@
 package com.chcreation.geprin_sion.presenter
 
 import android.content.Context
-import com.chcreation.geprin_sion.model.EMerchant
-import com.chcreation.geprin_sion.model.EMessageResult
-import com.chcreation.geprin_sion.model.ETable
-import com.chcreation.geprin_sion.model.EUser
+import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.util.*
 import com.chcreation.pointofsale.view.MainView
 import com.google.firebase.auth.FirebaseAuth
@@ -32,10 +29,12 @@ class UserPresenter(private val view: MainView, private val auth: FirebaseAuth, 
                 EUser.NAME.toString() to name,
                 EUser.EMAIL.toString() to email,
                 EUser.ACTIVE.toString() to 0,
+                EUser.STATUS.toString() to EStatusUser.USER.toString(),
                 EUser.CREATED_DATE.toString() to dateFormat().format(Date()),
                 EUser.UPDATED_DATE.toString() to dateFormat().format(Date())
             )
             database.child(getSinode())
+                .child(getPost())
                 .child(ETable.USER.toString())
                 .child(auth.currentUser!!.uid)
                 .setValue(values).addOnFailureListener {
@@ -54,24 +53,6 @@ class UserPresenter(private val view: MainView, private val auth: FirebaseAuth, 
         }
     }
 
-    fun retrieveUserLists(){
-        postListener = object : ValueEventListener {
-            override fun onCancelled(p0: DatabaseError) {
-                database.removeEventListener(this)
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                view.loadData(p0, EMessageResult.FETCH_USER_LIST_SUCCESS.toString())
-            }
-
-        }
-        database.child(ETable.MERCHANT.toString())
-            .child(getMerchantCredential(context))
-            .child(getMerchant(context))
-            .child(EMerchant.USER_LIST.toString())
-            .addListenerForSingleValueEvent(postListener)
-    }
-
     fun retrieveUser(userId: String){
         postListener = object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
@@ -84,8 +65,26 @@ class UserPresenter(private val view: MainView, private val auth: FirebaseAuth, 
 
         }
         database.child(getSinode())
+            .child(getPost())
             .child(ETable.USER.toString())
             .child(userId)
+            .addListenerForSingleValueEvent(postListener)
+    }
+
+    fun retrieveAdmin(){
+        postListener = object : ValueEventListener {
+            override fun onCancelled(p0: DatabaseError) {
+                database.removeEventListener(this)
+            }
+
+            override fun onDataChange(p0: DataSnapshot) {
+                view.loadData(p0, EMessageResult.FETCH_ADMIN_SUCCESS.toString())
+            }
+
+        }
+        database.child(getSinode())
+            .child(getPost())
+            .child(ETable.ADMIN.toString())
             .addListenerForSingleValueEvent(postListener)
     }
 

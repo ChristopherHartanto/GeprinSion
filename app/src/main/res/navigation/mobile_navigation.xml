@@ -3,7 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_jemaat">
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.chcreation.geprin_sion.home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+
+        <!--        <action-->
+        <!--            app:destination="@id/nav_jemaat" />-->
+    </fragment>
 
     <fragment
         android:id="@+id/nav_jemaat"
@@ -12,6 +22,7 @@
         tools:layout="@layout/fragment_jemaat">
 
 <!--        <action-->
-<!--            app:destination="@id/nav_jemaat" />-->
+<!--            app:destination="@id/nav_home" />-->
     </fragment>
+
 </navigation>

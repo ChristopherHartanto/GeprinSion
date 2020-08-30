@@ -5,5 +5,6 @@ data class User(
     var EMAIL: String? = "",
     var ACTIVE: Int? = 0,
     var CREATED_DATE: String? = "",
-    var UPDATED_DATE: String? = ""
+    var UPDATED_DATE: String? = "",
+    var STATUS: String? = EStatusUser.USER.toString()
 )

@@ -1,10 +1,12 @@
 package com.chcreation.geprin_sion.jemaat
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.model.*
@@ -17,6 +19,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_jemaat_detail.*
 import org.jetbrains.anko.*
+
 
 class JemaatDetailActivity : AppCompatActivity(), MainView,DaerahIndonesiaView {
 
@@ -81,8 +84,19 @@ class JemaatDetailActivity : AppCompatActivity(), MainView,DaerahIndonesiaView {
                     toast("Please Try Again")
                 true
             }
+            R.id.action_chat_wa ->{
+                intentWhatsapp(currentJemaat.NO_TEL.toString())
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun intentWhatsapp(number: String){
+        val url = "https://api.whatsapp.com/send?phone=$number"
+        val i = Intent(Intent.ACTION_VIEW)
+        i.data = Uri.parse(url)
+        startActivity(i)
     }
 
     private fun fetchData(){
@@ -94,6 +108,13 @@ class JemaatDetailActivity : AppCompatActivity(), MainView,DaerahIndonesiaView {
         tvJemaatDNoHp.text = currentJemaat.NO_TEL
         tvJemaatDGolDarah.text = currentJemaat.GOL_DARAH
         tvJemaatDJenisKelamin.text = currentJemaat.GENDER
+        tvJemaatDProvinsi.text = currentJemaat.PROVINSI
+        tvJemaatDKota.text = currentJemaat.KOTA
+        tvJemaatDKecamatan.text = currentJemaat.KECAMATAN
+        tvJemaatDKelurahan.text = currentJemaat.KELURAHAN
+        tvJemaatDRT.text = currentJemaat.RT
+        tvJemaatDRW.text = currentJemaat.RW
+
         val baptis = currentJemaat.BAPTIS
 
         if (baptis!!){

@@ -17,6 +17,8 @@ var RESULT_CLOSE_ALL = 1111
 
 fun getSinode() : String = "GEPRIN"
 
+fun getPost() : String = "SION"
+
 fun removeAllSharedPreference(context: Context){
     sharedPreference =  context.getSharedPreferences("LOCAL_DATA", Context.MODE_PRIVATE)
     val editor = sharedPreference.edit()

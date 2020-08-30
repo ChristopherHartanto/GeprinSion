@@ -1,13 +1,14 @@
 package com.chcreation.geprin_sion.login
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import com.chcreation.geprin_sion.*
-import com.chcreation.geprin_sion.main.MainActivity
+import androidx.appcompat.app.AppCompatActivity
+import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.main.SplashActivity
 import com.chcreation.geprin_sion.model.EDataType
 import com.chcreation.geprin_sion.model.ESharedPreference
 import com.chcreation.geprin_sion.presenter.UserPresenter
@@ -20,10 +21,9 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_sign_up.*
-import org.jetbrains.anko.alert
+import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
-import org.jetbrains.anko.startActivity
-import org.jetbrains.anko.yesButton
+
 
 class SignUpActivity : AppCompatActivity(),MainView {
 
@@ -96,13 +96,13 @@ class SignUpActivity : AppCompatActivity(),MainView {
                     presenter.createUser(name,email){
                         btnSignUp.isEnabled = true
                         pbSignUp.visibility = View.GONE
-
+                        mAuth.signOut()
                         alert ("Please Ask Administrator to Activate Your Account"){
                             title = "Successfully registered"
 
                             yesButton {
-                                startActivity<LoginActivity>()
                                 finish()
+                                requestActivation(email,name)
                             }
                         }.show()
                     }
@@ -118,6 +118,25 @@ class SignUpActivity : AppCompatActivity(),MainView {
             Toast.makeText(this,"Please fill up the Credentials", Toast.LENGTH_LONG).show()
             btnSignUp.isEnabled = true
             pbSignUp.visibility = View.GONE
+        }
+    }
+
+    private fun requestActivation(email: String,name: String) {
+        try{
+            val smsNumber = SplashActivity.adminNoTel
+            val sendIntent = Intent(Intent.ACTION_SEND)
+            sendIntent.type = "text/plain"
+            sendIntent.putExtra(Intent.EXTRA_TEXT, "email : $email \nname: $name")
+            sendIntent.putExtra("jid", "$smsNumber@s.whatsapp.net") //phone number without "+" prefix
+            sendIntent.setPackage("com.whatsapp")
+            if (intent.resolveActivity(packageManager) == null) {
+                Toast.makeText(this, "Error Sending Whatsapp", Toast.LENGTH_SHORT).show()
+                return
+            }
+            startActivity(sendIntent)
+        }catch (e:Exception){
+            toast(e.message.toString())
+            e.printStackTrace()
         }
     }
 

@@ -23,7 +23,10 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".jemaat.JemaatDetailActivity"></activity>
+        <activity android:name=".home.AddContentActivity"></activity>
+        <activity android:name=".user.UserActivity" />
+        <activity android:name=".jemaat.JemaatFilterActivity" />
+        <activity android:name=".jemaat.JemaatDetailActivity" />
         <activity android:name=".jemaat.ManageJemaatActivity" />
         <activity android:name=".jemaat.NewJemaatActivity" />
         <activity

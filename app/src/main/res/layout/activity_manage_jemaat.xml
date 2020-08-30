@@ -32,40 +32,6 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:elevation="10dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:orientation="vertical">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <EditText
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/etMJemaatName"
-                            android:hint="Nama Jemaat"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <EditText
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/etMJemaatAlamat"
-                            android:inputType="text"
-                            android:hint="Alamat"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:elevation="10dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -80,6 +46,17 @@
                         android:textStyle="bold"
                         android:textColor="@color/colorBlack"
                         android:textSize="18sp"/>
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/etMJemaatName"
+                            android:hint="Nama Jemaat"/>
+                    </com.google.android.material.textfield.TextInputLayout>
 
 
                     <LinearLayout
@@ -210,6 +187,167 @@
                             android:hint="Catatan"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:elevation="10dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Address"
+                        android:textStyle="bold"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="18sp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Provinsi"
+                            android:textColor="@color/colorBlack"/>
+
+                        <Spinner
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="2"
+                            android:id="@+id/spMJemaatProvinsi"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Kota/Kabupaten"
+                            android:textColor="@color/colorBlack"/>
+
+                        <Spinner
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="2"
+                            android:id="@+id/spMJemaatKotaKabupaten"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Kecamatan"
+                            android:textColor="@color/colorBlack"/>
+
+                        <Spinner
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="2"
+                            android:id="@+id/spMJemaatKecamatan"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Kelurahan"
+                            android:textColor="@color/colorBlack"/>
+
+                        <Spinner
+                            android:layout_width="0dp"
+                            android:layout_height="40dp"
+                            android:layout_weight="2"
+                            android:id="@+id/spMJemaatKelurahan"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="RT : "
+                            android:textColor="@color/colorBlack"/>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content">
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:id="@+id/etMJemaatRT"
+                                android:inputType="number"
+                                android:layout_marginEnd="5dp"
+                                android:hint="RT"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="RW : "
+                            android:textColor="@color/colorBlack"/>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content">
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:id="@+id/etMJemaatRW"
+                                android:inputType="number"
+                                android:hint="RW"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/etMJemaatAlamat"
+                            android:inputType="text"
+                            android:hint="Alamat Lengkap"/>
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
