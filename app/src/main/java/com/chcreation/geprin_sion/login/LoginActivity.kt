@@ -139,6 +139,12 @@ class LoginActivity : AppCompatActivity(), MainView {
                             item.NAME.toString(),
                             EDataType.STRING
                         )
+                        setDataPreference(
+                            this,
+                            ESharedPreference.IMAGE.toString(),
+                            item.IMAGE.toString(),
+                            EDataType.STRING
+                        )
                         toast("Login Success")
                         startActivity<MainActivity>()
                         finish()

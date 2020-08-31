@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 
 import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.model.EContent
 import com.chcreation.geprin_sion.model.EMessageResult
 import com.chcreation.geprin_sion.model.Like
 import com.chcreation.geprin_sion.presenter.HomePresenter
@@ -23,6 +25,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.support.v4.ctx
+import org.jetbrains.anko.support.v4.intentFor
 import org.jetbrains.anko.support.v4.onRefresh
 import org.jetbrains.anko.support.v4.startActivity
 
@@ -60,48 +63,57 @@ class HomeFragment : Fragment(), MainView {
 
         srHome.setColorSchemeColors(Color.BLUE, Color.RED)
 
-        rvAdapter = HomeRecyclerViewAdapter(ctx,requireActivity(),contentItems){
-            contentItems[it].LIKE = !contentItems[it].LIKE!!
-            rvAdapter.notifyDataSetChanged()
+        rvAdapter = HomeRecyclerViewAdapter(ctx,requireActivity(),contentItems){it,link->
+            if (link == ""){
+                contentItems[it].LIKE = !contentItems[it].LIKE!!
 
-            val like = contentItems[it].LIKE
-            if (!like!!){
-                val index = likeItems.indexOf(Like(contentItems[it].KEY))
-                if (index >= 0)
-                presenter.updateTotalLikes(contentItems[it].KEY.toString(),-1){totalLike ->
-                    if (totalLike != -99){
-                        presenter.deleteLike(likeKeyItems[index]){success ->
-                            if (success){
-                                contentItems[it].TOTAL_LIKE = totalLike
-                                rvAdapter.notifyDataSetChanged()
+                val like = contentItems[it].LIKE
+                if (!like!!){
+                    contentItems[it].TOTAL_LIKE = contentItems[it].TOTAL_LIKE!! - 1
+                    rvAdapter.notifyDataSetChanged()
+
+                    val index = likeItems.indexOf(Like(contentItems[it].KEY))
+                    if (index >= 0)
+                        presenter.updateTotalLikes(contentItems[it].KEY.toString(),-1){totalLike ->
+                            if (totalLike != -99){
+                                presenter.deleteLike(likeKeyItems[index]){success ->
+                                    if (success){
+                                        contentItems[it].TOTAL_LIKE = totalLike
+                                        rvAdapter.notifyDataSetChanged()
+                                    }else{
+                                        contentItems[it].LIKE = !contentItems[it].LIKE!!
+                                        rvAdapter.notifyDataSetChanged()
+                                    }
+                                }
                             }else{
                                 contentItems[it].LIKE = !contentItems[it].LIKE!!
                                 rvAdapter.notifyDataSetChanged()
                             }
                         }
-                    }else{
-                        contentItems[it].LIKE = !contentItems[it].LIKE!!
-                        rvAdapter.notifyDataSetChanged()
-                    }
                 }
-            }
-            else if (like){
-                presenter.updateTotalLikes(contentItems[it].KEY.toString(),1){totalLike ->
-                    if(totalLike != -99){
-                        presenter.createLike(contentItems[it].KEY.toString()){ success ->
-                            if (success){
-                                contentItems[it].TOTAL_LIKE = totalLike
-                                rvAdapter.notifyDataSetChanged()
-                            }else{
-                                contentItems[it].LIKE = !contentItems[it].LIKE!!
-                                rvAdapter.notifyDataSetChanged()
+                else if (like){
+                    contentItems[it].TOTAL_LIKE = contentItems[it].TOTAL_LIKE!! + 1
+                    rvAdapter.notifyDataSetChanged()
+
+                    presenter.updateTotalLikes(contentItems[it].KEY.toString(),1){totalLike ->
+                        if(totalLike != -99){
+                            presenter.createLike(contentItems[it].KEY.toString()){ success ->
+                                if (success){
+                                    contentItems[it].TOTAL_LIKE = totalLike
+                                    rvAdapter.notifyDataSetChanged()
+                                }else{
+                                    contentItems[it].LIKE = !contentItems[it].LIKE!!
+                                    rvAdapter.notifyDataSetChanged()
+                                }
                             }
+                        }else{
+                            contentItems[it].LIKE = !contentItems[it].LIKE!!
+                            rvAdapter.notifyDataSetChanged()
                         }
-                    }else{
-                        contentItems[it].LIKE = !contentItems[it].LIKE!!
-                        rvAdapter.notifyDataSetChanged()
                     }
                 }
+            }else{
+                startActivity(intentFor<ContentDetailActivity>(EContent.IMAGE_CONTENT.toString() to link))
             }
         }
         rvHome.apply {
@@ -124,6 +136,7 @@ class HomeFragment : Fragment(), MainView {
 
     override fun onStart() {
         super.onStart()
+        presenter.retrieveLikes()
     }
 
     override fun onResume() {
@@ -151,10 +164,10 @@ class HomeFragment : Fragment(), MainView {
                             contentItems.add(item)
                         }
                     }
-                    contentItems.reverse()
-                    rvAdapter.notifyDataSetChanged()
-                    srHome.isRefreshing = false
                 }
+                contentItems.reverse()
+                rvAdapter.notifyDataSetChanged()
+                srHome.isRefreshing = false
             }
             if (response == EMessageResult.FETCH_LIKE_SUCCESS.toString()){
                 if (dataSnapshot.exists()){

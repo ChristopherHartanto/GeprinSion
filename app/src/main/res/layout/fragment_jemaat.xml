@@ -27,172 +27,33 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <androidx.appcompat.widget.SearchView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:iconifiedByDefault="false"
-            android:id="@+id/svJemaat"
-            app:queryHint="Search Here"/>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginHorizontal="5dp"
-            android:elevation="20dp">
-            <LinearLayout
-                android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <androidx.appcompat.widget.SearchView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:orientation="horizontal">
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="8"
-                    android:orientation="vertical">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp"
-                            android:text="Jenis Kelamin : "/>
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorBlack"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:text="All"
-                            android:id="@+id/tvJemaatFilterGender"/>
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp"
-                            android:text="Gol Darah : "/>
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/colorBlack"
-                            android:textStyle="bold"
-                            android:textSize="16sp"
-                            android:text="All"
-                            android:id="@+id/tvJemaatFilterGolDarah"/>
-                    </LinearLayout>
+                android:layout_weight="7"
+                app:iconifiedByDefault="false"
+                android:id="@+id/svJemaat"
+                app:queryHint="Search Here"/>
 
-                </LinearLayout>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2"
-                    android:textColor="@color/colorPrimary"
-                    android:text="Filter"
-                    android:textSize="16sp"
-                    android:gravity="center"
-                    android:id="@+id/tvJemaatOpenPopupFilter"/>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/cvJemaatPopUpFilter"
-            android:visibility="gone"
-            android:layout_marginBottom="5dp"
-            android:layout_marginHorizontal="5dp">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:layout_marginBottom="10dp"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Jenis Kelamin"
-                        android:textColor="@color/colorBlack"/>
-
-                    <Spinner
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="2"
-                        android:id="@+id/spJemaatFilterJenisKelamin"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Golongan Darah"
-                        android:textColor="@color/colorBlack"/>
-
-                    <Spinner
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="2"
-                        android:id="@+id/spJemaatFilterGolDarah"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Baptis"
-                        android:textColor="@color/colorBlack"/>
-
-                    <Spinner
-                        android:layout_width="0dp"
-                        android:layout_height="50dp"
-                        android:layout_weight="2"
-                        android:id="@+id/spJemaatFilterBaptis"/>
-
-                </LinearLayout>
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/colorPrimary"
-                    android:id="@+id/btnJemaatApplyFilter"
-                    android:textColor="@color/colorWhite"
-                    android:text="Apply"/>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="3"
+                android:text="Filter"
+                android:id="@+id/btnJemaatFilter"
+                android:background="@drawable/button_border"
+                android:textColor="@color/colorPrimary"
+                android:layout_marginHorizontal="5dp"
+                android:layout_gravity="center"/>
+        </LinearLayout>
 
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
             android:id="@+id/srJemaat">
 
             <androidx.recyclerview.widget.RecyclerView

@@ -11,5 +11,17 @@
         <item
             android:id="@+id/nav_jemaat"
             android:title="Data Jemaat" />
+
+        <item
+            android:id="@+id/nav_kidung"
+            android:title="Kidung" />
+
+        <item
+            android:id="@+id/nav_archive"
+            android:title="Archive" />
+
+        <item
+            android:id="@+id/nav_profile"
+            android:title="Profile" />
     </group>
 </menu>

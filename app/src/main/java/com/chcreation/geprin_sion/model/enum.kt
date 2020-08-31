@@ -102,7 +102,9 @@ enum class EContent{
     CAPTION,
     USER_CODE,
     USER_NAME,
+    USER_IMAGE,
     STATUS,
+    TYPE,
     KEY
 }
 
@@ -112,8 +114,18 @@ enum class EUser{
     NAME,
     EMAIL,
     ACTIVE,
-    ADDRESS,
-    TEL,
+    PROVINSI,
+    KOTA,
+    KECAMATAN,
+    KELURAHAN,
+    RT,
+    RW,
+    ALAMAT,
+    GENDER,
+    GOL_DARAH,
+    TEMPAT_LAHIR,
+    TANGGAL_LAHIR,
+    NO_TEL,
     IMAGE,
     CODE,
     STATUS
@@ -207,6 +219,13 @@ enum class EUserGroup{
     WAITER
 }
 
+enum class EContentType{
+    Warta,
+    Pengumuman,
+    File,
+    Streaming
+}
+
 enum class ESharedPreference{
     MERCHANT,
     MERCHANT_CREDENTIAL,
@@ -215,6 +234,7 @@ enum class ESharedPreference{
     NO_TELP,
     ADDRESS,
     NAME,
+    IMAGE,
     EMAIL
 }
 

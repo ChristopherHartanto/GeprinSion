@@ -23,7 +23,9 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".home.AddContentActivity"></activity>
+        <activity android:name=".archive.ArchiveViewImageActivity"></activity>
+        <activity android:name=".home.ContentDetailActivity" />
+        <activity android:name=".home.AddContentActivity" />
         <activity android:name=".user.UserActivity" />
         <activity android:name=".jemaat.JemaatFilterActivity" />
         <activity android:name=".jemaat.JemaatDetailActivity" />

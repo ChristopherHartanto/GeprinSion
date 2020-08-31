@@ -13,24 +13,22 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.jemaat.ManageJemaatActivity
-import com.chcreation.geprin_sion.model.EJemaat
-import com.chcreation.geprin_sion.model.EMessageResult
-import com.chcreation.geprin_sion.model.ETable
+import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.HomePresenter
 import com.chcreation.geprin_sion.presenter.JemaatPresenter
-import com.chcreation.geprin_sion.util.dateFormat
-import com.chcreation.geprin_sion.util.getName
-import com.chcreation.geprin_sion.util.normalClickAnimation
-import com.chcreation.geprin_sion.util.showError
+import com.chcreation.geprin_sion.util.*
 import com.chcreation.pointofsale.view.MainView
 import com.google.android.gms.tasks.Continuation
 import com.google.android.gms.tasks.Task
@@ -57,6 +55,10 @@ class AddContentActivity : AppCompatActivity(), MainView {
     private lateinit var mDatabase : DatabaseReference
     private lateinit var presenter: HomePresenter
     private lateinit var storage: StorageReference
+    private lateinit var spTypeAdapter: ArrayAdapter<String>
+    private var typeItems = arrayListOf<String>(EContentType.File.toString(),EContentType.Pengumuman.toString(),
+        EContentType.Streaming.toString(),EContentType.Warta.toString())
+    private var selectedType = ""
     private var PICK_IMAGE_CAMERA  = 111
     private var CAMERA_PERMISSION  = 101
     private var PICK_IMAGE_GALLERY = 222
@@ -76,6 +78,27 @@ class AddContentActivity : AppCompatActivity(), MainView {
         presenter = HomePresenter(this,mAuth,mDatabase, this)
         storage = FirebaseStorage.getInstance().reference
 
+        spTypeAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,typeItems)
+        spTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spContentType.adapter = spTypeAdapter
+        spContentType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedType = typeItems[position]
+            }
+
+        }
+        spContentType.gravity = Gravity.CENTER
+
         contentId = generateContentId()
         tvAddContentUserName.text = getName(this)
     }
@@ -91,7 +114,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
     }
 
     override fun onBackPressed() {
-        if (filePath != null || etContent.text.toString() != "" && isPosting){
+        if (filePath != null || etContent.text.toString() != "" && !isPosting){
             alert ("Do You Want to Discard?"){
                 title = "Create Post"
                 yesButton {
@@ -125,7 +148,8 @@ class AddContentActivity : AppCompatActivity(), MainView {
                         alert ("Are You Sure Want to Post?"){
                             title = "Post"
                             yesButton {
-                                toast("Posting Content . . .")
+                                toast("Your Content Will be Post Shortly . . .")
+                                finish()
                                 isPosting = true
                                 if (filePath == null)
                                     createContent("")
@@ -149,8 +173,9 @@ class AddContentActivity : AppCompatActivity(), MainView {
         val caption = etContent.text.toString().trim()
         val link = etAddContentLink.text.toString().trim()
 
-        presenter.createContent(Content("", mAuth.currentUser!!.uid, getName(this@AddContentActivity),
-            false,0,image,caption,"",link,contentId, dateFormat().format(Date()),
+        presenter.createContent(Content(
+            getImage(this), mAuth.currentUser!!.uid, getName(this@AddContentActivity),
+            false,0,image,caption,selectedType,link,contentId, dateFormat().format(Date()),
             dateFormat().format(Date()), mAuth.currentUser!!.uid, mAuth.currentUser!!.uid))
     }
 

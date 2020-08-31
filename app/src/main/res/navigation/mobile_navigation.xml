@@ -25,4 +25,27 @@
 <!--            app:destination="@id/nav_home" />-->
     </fragment>
 
+    <fragment
+        android:id="@+id/nav_kidung"
+        android:name="com.chcreation.geprin_sion.kidung.KidungFragment"
+        android:label="Kidung"
+        tools:layout="@layout/fragment_kidung">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_archive"
+        android:name="com.chcreation.geprin_sion.archive.ArchiveFragment"
+        android:label="Archive"
+        tools:layout="@layout/fragment_archive">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.chcreation.geprin_sion.profile.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile">
+
+    </fragment>
 </navigation>

@@ -3,18 +3,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".home.HomeFragment">
 
-   <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+   <LinearLayout
        android:layout_width="match_parent"
        android:layout_height="match_parent"
-       android:id="@+id/srHome">
-      <androidx.recyclerview.widget.RecyclerView
+       android:orientation="vertical">
+
+      <androidx.cardview.widget.CardView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_margin="5dp"
+          android:elevation="5dp"
+          app:cardCornerRadius="5dp">
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:orientation="vertical"
+             android:padding="5dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorBlack"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:text="Kebaktian 1"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp"
+                android:text="Starts In : 10 Minutes"/>
+         </LinearLayout>
+      </androidx.cardview.widget.CardView>
+
+      <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
           android:layout_width="match_parent"
           android:layout_height="match_parent"
-          android:id="@+id/rvHome"/>
-   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
+          android:id="@+id/srHome">
+         <androidx.recyclerview.widget.RecyclerView
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:id="@+id/rvHome"/>
+      </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+   </LinearLayout>
 
    <com.google.android.material.floatingactionbutton.FloatingActionButton
        android:layout_width="wrap_content"

@@ -2,6 +2,7 @@ package com.chcreation.geprin_sion.main
 
 import android.os.Bundle
 import android.os.Handler
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.View
 import android.widget.FrameLayout
@@ -19,13 +20,12 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.home.HomeFragment
 import com.chcreation.geprin_sion.home.HomeFragment.Companion.active
 import com.chcreation.geprin_sion.login.LoginActivity
-import com.chcreation.geprin_sion.util.RESULT_CLOSE_ALL
-import com.chcreation.geprin_sion.util.getName
-import com.chcreation.geprin_sion.util.normalClickAnimation
-import com.chcreation.geprin_sion.util.removeAllSharedPreference
+import com.chcreation.geprin_sion.util.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home,R.id.nav_jemaat
+                R.id.nav_home,R.id.nav_jemaat,R.id.nav_kidung,R.id.nav_archive,R.id.nav_profile
             ), drawerLayout
         )
 
@@ -83,12 +83,16 @@ class MainActivity : AppCompatActivity() {
 
         tvUserName.text = getName(this)
 
+        if (getImage(this) != "")
+            Glide.with(this).load(getImage(this)).into(ivNavHeader)
+
         ivNavLogout.onClick {
             ivNavLogout.startAnimation(normalClickAnimation())
             alert("Do You Want to Logout ?") {
                 title = "Logout"
                 yesButton {
                     removeAllSharedPreference(this@MainActivity)
+                    clearContentData()
                     mAuth.signOut()
                     startActivity<LoginActivity>()
                     finish()
@@ -111,12 +115,19 @@ class MainActivity : AppCompatActivity() {
         if (active){
             this.doubleBackToExitPressedOnce = true
             toast("Please click BACK again to exit")
-        }else
+        }else {
+            clearContentData()
             super.onBackPressed()
-
+        }
         Handler().postDelayed(Runnable { doubleBackToExitPressedOnce = false }, 2000)
     }
 
+
+    fun clearContentData(){
+        HomeFragment.contentItems.clear()
+        HomeFragment.likeItems.clear()
+        HomeFragment.likeKeyItems.clear()
+    }
 //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
 //        // Inflate the menu; this adds items to the action bar if it is present.
 //        menuInflater.inflate(R.menu.main, menu)

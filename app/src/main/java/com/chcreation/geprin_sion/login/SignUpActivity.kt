@@ -80,19 +80,6 @@ class SignUpActivity : AppCompatActivity(),MainView {
             pbSignUp.visibility = View.VISIBLE
             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this, OnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    setDataPreference(
-                        this,
-                        ESharedPreference.NAME.toString(),
-                        name,
-                        EDataType.STRING
-                    )
-                    setDataPreference(
-                        this,
-                        ESharedPreference.EMAIL.toString(),
-                        email,
-                        EDataType.STRING
-                    )
-
                     presenter.createUser(name,email){
                         btnSignUp.isEnabled = true
                         pbSignUp.visibility = View.GONE

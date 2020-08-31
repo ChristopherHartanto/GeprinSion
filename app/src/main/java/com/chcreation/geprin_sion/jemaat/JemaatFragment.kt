@@ -27,6 +27,13 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedBaptis
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedGender
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedGolDarah
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedKecamatan
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedKelurahan
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedKota
+import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedProvinsi
 import com.chcreation.geprin_sion.main.MainActivity
 import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.JemaatPresenter
@@ -42,11 +49,9 @@ import kotlinx.android.synthetic.main.fragment_jemaat.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.jetbrains.anko.noButton
-import org.jetbrains.anko.notificationManager
+import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.support.v4.*
-import org.jetbrains.anko.yesButton
 import java.io.*
 import java.util.*
 
@@ -63,20 +68,6 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
     private var jemaatKeys = mutableListOf<Int>()
     private var filteredJemaatItems = mutableListOf<Jemaat>()
     private var filterJemaatKeys = mutableListOf<Int>()
-    private lateinit var spGenderAdapter: ArrayAdapter<String>
-    private lateinit var spBaptisAdapter: ArrayAdapter<String>
-    private lateinit var spGolDarahAdapter: ArrayAdapter<String>
-    private var genderItems = arrayListOf(EGender.All.toString(),EGender.Pria.toString(),EGender.Perempuan.toString())
-    private var baptisItems = arrayListOf(EBaptis.All.toString(),EBaptis.Yes.toString(),EBaptis.No.toString())
-    private var golDarahItems = arrayListOf(
-        EGolDarah.All.toString(),
-        EGolDarah.A.toString(),
-        EGolDarah.B.toString(),
-        EGolDarah.O.toString(),
-        EGolDarah.AB.toString())
-    private var selectedGender = EGender.All.toString()
-    private var selectedGolDarah = EGolDarah.All.toString()
-    private var selectedBaptis = EBaptis.All.toString()
     private var searchFilter = ""
     private var WRITE_PERMISION = 101
 
@@ -87,8 +78,6 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_jemaat, container, false)
     }
-
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -151,11 +140,27 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
 
         })
 
-        initPopup()
+        btnJemaatFilter.onClick {
+            btnJemaatFilter.startAnimation(normalClickAnimation())
+            startActivity<JemaatFilterActivity>()
+        }
     }
 
     override fun onStart() {
         super.onStart()
+
+        if (selectedBaptis != EBaptis.All.toString() || selectedGender != EGender.All.toString()
+            || selectedGolDarah != EGolDarah.All.toString() || selectedProvinsi != ""
+            || selectedKota != "" || selectedKecamatan != "" || selectedKelurahan != ""
+        ){
+            btnJemaatFilter.backgroundResource = R.drawable.button_border_fill
+            btnJemaatFilter.textColorResource = R.color.colorWhite
+            btnJemaatFilter.text = "Filtered"
+        }else{
+            btnJemaatFilter.backgroundResource = R.drawable.button_border
+            btnJemaatFilter.textColorResource = R.color.colorPrimary
+            btnJemaatFilter.text = "Filter"
+        }
 
         presenter.retrieveJemaats()
     }
@@ -176,86 +181,6 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
         }
     }
 
-    private fun initPopup(){
-        spGenderAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,genderItems)
-        spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatFilterJenisKelamin.adapter = spGenderAdapter
-        spJemaatFilterJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedGender = genderItems[position]
-            }
-
-        }
-        spJemaatFilterJenisKelamin.gravity = Gravity.CENTER
-
-        spGolDarahAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,golDarahItems)
-        spGolDarahAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatFilterGolDarah.adapter = spGolDarahAdapter
-        spJemaatFilterGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedGolDarah = golDarahItems[position]
-            }
-
-        }
-        spJemaatFilterGolDarah.gravity = Gravity.CENTER
-
-        spBaptisAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,baptisItems)
-        spBaptisAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spJemaatFilterBaptis.adapter = spBaptisAdapter
-        spJemaatFilterBaptis.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedBaptis = baptisItems[position]
-            }
-
-        }
-        spJemaatFilterBaptis.gravity = Gravity.CENTER
-
-        btnJemaatApplyFilter.onClick {
-            btnJemaatApplyFilter.startAnimation(normalClickAnimation())
-            cvJemaatPopUpFilter.visibility = View.GONE
-            tvJemaatOpenPopupFilter.text = "Filter"
-
-            tvJemaatFilterGender.text = selectedGender
-            tvJemaatFilterGolDarah.text = selectedGolDarah
-
-            filterData()
-        }
-
-        tvJemaatOpenPopupFilter.onClick {
-            cvJemaatPopUpFilter.visibility = if (cvJemaatPopUpFilter.isVisible) View.GONE else View.VISIBLE
-            tvJemaatOpenPopupFilter.text = if (tvJemaatOpenPopupFilter.isVisible) "Close" else "Filter"
-        }
-    }
 
     private fun filterData(){
         filteredJemaatItems.clear()
@@ -267,6 +192,10 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
             if ((baptis.toString() == selectedBaptis || selectedBaptis == EBaptis.All.toString())
                 && (data.GENDER == selectedGender || selectedGender == EGender.All.toString())
                 && (data.GOL_DARAH == selectedGolDarah || selectedGolDarah == EGolDarah.All.toString())
+                && (data.PROVINSI == selectedProvinsi || selectedProvinsi == "")
+                && (data.KOTA == selectedKota || selectedKota == "")
+                && (data.KECAMATAN == selectedKecamatan || selectedKecamatan == "")
+                && (data.KELURAHAN == selectedKelurahan || selectedKelurahan == "")
                 && (data.NAMA!!.toLowerCase(Locale.getDefault()).contains(searchFilter) || searchFilter == "")){
                 filterJemaatKeys.add(jemaatKeys[index])
                 filteredJemaatItems.add(jemaatItems[index])

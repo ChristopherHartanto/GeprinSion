@@ -55,6 +55,8 @@ class SplashActivity : AppCompatActivity(), MainView {
         tvSplashVersion.text = version
 
         tvSplashLoading.text = "Fetch Data . . ."
+        MainActivity().clearContentData()
+
         if (mAuth.currentUser != null){
             homePresenter.retrieveLikes()
         }else{

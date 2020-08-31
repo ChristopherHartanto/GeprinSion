@@ -63,9 +63,9 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
     private lateinit var spKecamatanAdapter: ArrayAdapter<String>
     private lateinit var spKelurahanAdapter: ArrayAdapter<String>
     private var provinsiSpinnerItems = arrayListOf<String>()
-    private var kotaSpinnerItems = arrayListOf<String>()
-    private var kecamatanSpinnerItems = arrayListOf<String>()
-    private var kelurahanSpinnerItems = arrayListOf<String>()
+    private var kotaSpinnerItems = arrayListOf<String>("")
+    private var kecamatanSpinnerItems = arrayListOf<String>("")
+    private var kelurahanSpinnerItems = arrayListOf<String>("")
     private var provinsiItems = arrayListOf<provinsi>()
     private var kotaItems = arrayListOf<KotaKabupaten>()
     private var kecamatanItems = arrayListOf<Kecamatan>()
@@ -600,6 +600,8 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
     override fun showProvinsi(provinsi: List<provinsi>) {
         provinsiItems.clear()
         provinsiSpinnerItems.clear()
+        provinsiItems.add(provinsi())
+
         provinsiItems.addAll(provinsi)
         for (data in provinsiItems){
             provinsiSpinnerItems.add(data.nama.toString())
@@ -610,6 +612,8 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
     override fun showKotaKabupaten(kotaKabupaten: List<KotaKabupaten>) {
         kotaItems.clear()
         kotaSpinnerItems.clear()
+        kotaItems.add(KotaKabupaten())
+
         kotaItems.addAll(kotaKabupaten)
         for (data in kotaItems){
             kotaSpinnerItems.add(data.nama.toString())
@@ -621,6 +625,8 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
     override fun showKecamatan(kecamatan: List<Kecamatan>) {
         kecamatanItems.clear()
         kecamatanSpinnerItems.clear()
+        kecamatanItems.add(Kecamatan())
+
         kecamatanItems.addAll(kecamatan)
         for (data in kecamatanItems){
             kecamatanSpinnerItems.add(data.nama.toString())
@@ -631,6 +637,8 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
     override fun showKelurahan(kelurahan: List<Kelurahan>) {
         kelurahanItems.clear()
         kelurahanSpinnerItems.clear()
+        kelurahanItems.add(Kelurahan())
+
         kelurahanItems.addAll(kelurahan)
         for (data in kelurahanItems){
             kelurahanSpinnerItems.add(data.nama.toString())

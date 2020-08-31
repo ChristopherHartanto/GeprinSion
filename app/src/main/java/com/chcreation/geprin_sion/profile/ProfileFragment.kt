@@ -1,4 +1,4 @@
-package com.chcreation.geprin_sion.jemaat
+package com.chcreation.geprin_sion.profile
 
 import android.app.Activity
 import android.app.DatePickerDialog
@@ -9,14 +9,15 @@ import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.os.StrictMode
 import android.provider.MediaStore
-import android.util.Log
 import android.view.Gravity
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -24,13 +25,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
+
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.model.*
-import com.chcreation.geprin_sion.presenter.JemaatPresenter
-import com.chcreation.geprin_sion.util.dateFormat
-import com.chcreation.geprin_sion.util.normalClickAnimation
-import com.chcreation.geprin_sion.util.showError
-import com.chcreation.geprin_sion.util.simpleDateFormat
+import com.chcreation.geprin_sion.presenter.HomePresenter
+import com.chcreation.geprin_sion.presenter.ProfilePresenter
+import com.chcreation.geprin_sion.util.*
 import com.chcreation.geprin_sion.view.DaerahIndonesiaView
 import com.chcreation.pointofsale.view.MainView
 import com.google.android.gms.tasks.Continuation
@@ -42,18 +42,20 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
+import kotlinx.android.synthetic.main.activity_add_content.*
 import kotlinx.android.synthetic.main.activity_manage_jemaat.*
-import kotlinx.android.synthetic.main.activity_new_jemaat.*
-import kotlinx.android.synthetic.main.activity_new_jemaat.layoutJemaatBaptis
-import org.jetbrains.anko.sdk27.coroutines.onCheckedChange
+import kotlinx.android.synthetic.main.fragment_profile.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.selector
+import org.jetbrains.anko.support.v4.ctx
+import org.jetbrains.anko.support.v4.selector
+import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
 import java.util.*
 
-class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
+class ProfileFragment : Fragment(), MainView, DaerahIndonesiaView {
 
     private var cal = Calendar.getInstance()
     private lateinit var tanggalBaptisListener : DatePickerDialog.OnDateSetListener
@@ -80,129 +82,82 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     private var selectedKota = ""
     private var selectedKecamatan = ""
     private var selectedKelurahan = ""
+    private var loadProvinsi = false
+    private var loadKota = false
+    private var loadKecamatan = false
+    private var loadKelurahan = false
+    private lateinit var mAuth: FirebaseAuth
+    private lateinit var mDatabase : DatabaseReference
+    private lateinit var presenter: ProfilePresenter
     private lateinit var storage: StorageReference
     private var PICK_IMAGE_CAMERA  = 111
     private var CAMERA_PERMISSION  = 101
     private var PICK_IMAGE_GALLERY = 222
     private var READ_PERMISION = 202
     private var filePath: Uri? = null
-    private var jemaatId = ""
-    private lateinit var mDatabase : DatabaseReference
-    private lateinit var presenter: JemaatPresenter
-    private lateinit var mAuth: FirebaseAuth
-    private var currentJemaat = Jemaat()
-    private var loadProvinsi = false
-    private var loadKota = false
-    private var loadKecamatan = false
-    private var loadKelurahan = false
-    private var currentJemaatKey = 0
+    private var currentUser = User()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_manage_jemaat)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_profile, container, false)
+    }
 
-        supportActionBar?.title = "Edit Jemaat"
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
-        presenter = JemaatPresenter(this,this,mAuth,mDatabase, this)
+        presenter = ProfilePresenter(this,this,mAuth,mDatabase, ctx)
         storage = FirebaseStorage.getInstance().reference
-        jemaatId = generateJemaatId()
-        initDateListener()
-        initSpinners()
-        currentJemaatKey = intent.extras?.getInt(EJemaat.KEY.toString()) ?: 0
 
-        swMJemaatBaptis.onCheckedChange { buttonView, isChecked ->
-            if (swMJemaatBaptis.isChecked){
-                layoutJemaatBaptis.visibility = View.VISIBLE
-            }else{
-                layoutJemaatBaptis.visibility = View.GONE
-            }
-        }
-
-        ivMJemaatImage.onClick {
+        ivProfileImage.onClick {
             selectImage()
         }
 
-        tvMJemaatTanggalBaptis.onClick {
-            DatePickerDialog(this@ManageJemaatActivity,
-                tanggalBaptisListener,
-                cal.get(Calendar.YEAR),
-                cal.get(Calendar.MONTH),
-                cal.get(Calendar.DAY_OF_MONTH)).show()
+        btnProfileSave.onClick {
+            btnProfileSave.startAnimation(normalClickAnimation())
+            if (filePath != null)
+                uploadImage()
+            else
+                updateProfile("")
         }
 
-        tvMJemaatTanggalLahir.onClick {
-            DatePickerDialog(this@ManageJemaatActivity,
+        tvProfileTanggalLahir.onClick {
+            DatePickerDialog(ctx,
                 tanggalLahirListener,
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        btnMJemaatSave.onClick {
-            btnMJemaatSave.startAnimation(normalClickAnimation())
-
-            if (filePath == null)
-                saveJemaat("")
-            else
-                uploadImage()
-        }
+        initSpinner()
+        initDateListener()
     }
 
     override fun onStart() {
         super.onStart()
-
-        val id = intent.extras?.getString(EJemaat.ID.toString(),"")
-        if (id != null) {
-            presenter.retrieveJemaatByKey(currentJemaatKey.toString())
-        }
+        btnProfileSave.isEnabled = false
+        presenter.retrieveUser(mAuth.currentUser!!.uid)
     }
-
-    private fun saveJemaat(newImage: String?){
-        loading()
-
-        val nama = etMJemaatName.text.toString()
-        val alamat = etMJemaatAlamat.text.toString()
-        val golDarah = selectedGolDarah
-        val jenisKelamin = selectedGender
-        val noTel = etMJemaatNoHp.text.toString()
-        val note = etMJemaatNote.text.toString()
-        val baptis = swMJemaatBaptis.isChecked
-        val tanggalLahir = tvMJemaatTanggalLahir.text.toString()
-        val tempatLahir = etMJemaatTempatLahir.text.toString()
-        val tanggalBaptis = tvMJemaatTanggalBaptis.text.toString()
-        val tempatBaptis = etMJemaatTempatBaptis.text.toString()
-        val noSertifikat = etMJemaatNoSertifikat.text.toString()
-        val rt = etMJemaatRT.text.toString()
-        val rw = etMJemaatRW.text.toString()
-
-        val image = if (newImage == "") currentJemaat.IMAGE else newImage
-
-        presenter.updateJemaat(Jemaat(nama,selectedProvinsi,selectedKota,selectedKecamatan,selectedKelurahan,rt,rw,alamat,jenisKelamin,golDarah,tempatLahir,tanggalLahir,noTel,note,
-            baptis,noSertifikat,tempatBaptis,tanggalBaptis,
-            currentJemaat.CREATED_DATE,
-            dateFormat().format(Date()),
-            currentJemaat.CREATED_BY,
-            mAuth.currentUser!!.uid,image,currentJemaat.ID), currentJemaatKey.toString()
-        )
-    }
-
     private fun uploadImage(){
         if(filePath != null){
             loading()
 
-            val ref = storage.child(ETable.JEMAAT.toString())
-                .child(jemaatId)
+            val ref = storage.child(ETable.USER.toString())
+                .child(mAuth.currentUser!!.uid)
 
             val uploadTask = ref.putFile(filePath!!)
 
             val urlTask = uploadTask.continueWithTask(Continuation<UploadTask.TaskSnapshot, Task<Uri>> { task ->
                 if (!task.isSuccessful) {
                     task.exception?.let {
+                        unLoading()
                         throw it
                     }
                 }
@@ -210,17 +165,57 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val downloadUri = task.result
-                    saveJemaat(downloadUri.toString())
+                    updateProfile(downloadUri.toString())
                 } else {
+                    unLoading()
                     toast("Failed to Save Image")
-                    endLoading()
                 }
             }.addOnFailureListener{
+                unLoading()
                 toast("Error : ${it.message}")
-                endLoading()
             }
         }else{
-            Toast.makeText(this, "Please Upload an Image", Toast.LENGTH_SHORT).show()
+            toast("Please Upload an Image")
+        }
+    }
+
+    private fun updateProfile(uploadImage: String){
+        loading()
+
+        val name = etProfileName.text.toString()
+        val alamat = etProfileAlamat.text.toString()
+        val noTel = etProfileNoHp.text.toString()
+        val tempatLahir = etProfileTempatLahir.text.toString()
+        val tanggaLahir = tvProfileTanggalLahir.text.toString()
+        val rt = etProfileRT.text.toString()
+        val rw = etProfileRW.text.toString()
+        val image = if (uploadImage == "") currentUser.IMAGE.toString() else uploadImage
+
+        presenter.updateUser(User(name,image,currentUser.EMAIL,selectedProvinsi,selectedKota,
+            selectedKecamatan,selectedKelurahan,rt,rw,alamat,selectedGender,selectedGolDarah,
+            tempatLahir,tanggaLahir,noTel,currentUser.ACTIVE,currentUser.CREATED_DATE,currentUser.UPDATED_DATE,
+            currentUser.STATUS)){
+            if (isVisible && isResumed){
+                if (it){
+                    setDataPreference(
+                        ctx,
+                        ESharedPreference.NAME.toString(),
+                        name,
+                        EDataType.STRING
+                    )
+                    setDataPreference(
+                        ctx,
+                        ESharedPreference.IMAGE.toString(),
+                        image,
+                        EDataType.STRING
+                    )
+                    toast("Update Success")
+                }
+                else
+                    toast("Update Failed")
+
+                unLoading()
+            }
         }
     }
 
@@ -230,7 +225,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     private fun createImageFile(): File {
         // Create an image file name
         val timeStamp: String = dateFormat().format(Date(1000))
-        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val storageDir: File? = ctx.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile(
             "JPEG_${timeStamp}_", /* prefix */
             ".jpg", /* suffix */
@@ -246,7 +241,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     // Select Image method
     private fun selectImage() { // Defining Implicit Intent to mobile gallery
 
-        intent = Intent()
+        val intent = Intent()
         val options = mutableListOf("Take a Photo", "Pick from Gallery")
 
 
@@ -254,9 +249,9 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
                 dialogInterface, i ->
             when(i){
                 0 -> {
-                    if (ContextCompat.checkSelfPermission(this@ManageJemaatActivity, android.Manifest.permission.CAMERA)
+                    if (ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED)
-                        ActivityCompat.requestPermissions(this@ManageJemaatActivity,
+                        ActivityCompat.requestPermissions(requireActivity(),
                             arrayOf(android.Manifest.permission.CAMERA),CAMERA_PERMISSION
                         )
                     else
@@ -264,9 +259,9 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
 
                 }
                 1 -> {
-                    if (ContextCompat.checkSelfPermission(this@ManageJemaatActivity, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    if (ContextCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED)
-                        ActivityCompat.requestPermissions(this@ManageJemaatActivity,
+                        ActivityCompat.requestPermissions(requireActivity(),
                             arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,android.Manifest.permission.WRITE_EXTERNAL_STORAGE),READ_PERMISION
                         )
                     else
@@ -280,7 +275,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     private fun openCamera(){
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
             // Ensure that there's a camera activity to handle the intent
-            takePictureIntent.resolveActivity(packageManager)?.also {
+            takePictureIntent.resolveActivity(ctx.packageManager)?.also {
                 // Create the File where the photo should go
                 val photoFile: File? = try {
                     createImageFile()
@@ -290,11 +285,10 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
                 // Continue only if the File was successfully created
                 photoFile?.also {
                     val photoURI: Uri = FileProvider.getUriForFile(
-                        this,
+                        ctx,
                         "com.example.android.geprin_sion.fileprovider",
                         it
                     )
-                    Log.d("uri: ",photoURI.toString())
                     filePath = photoURI
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
                     startActivityForResult(takePictureIntent, PICK_IMAGE_CAMERA)
@@ -304,7 +298,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     }
 
     private fun openGallery(){
-        intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         startActivityForResult(
             intent,
             PICK_IMAGE_GALLERY
@@ -318,13 +312,13 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             try {
                 val bitmap = MediaStore.Images.Media
                     .getBitmap(
-                        contentResolver,
+                        ctx.contentResolver,
                         filePath
                     )
-                ivMJemaatImage.setImageBitmap(rotateImage(bitmap))
+                ivProfileImage.setImageBitmap(rotateImage(bitmap))
             } catch (e: Exception) {
                 filePath = null
-                showError(this,e.message.toString())
+                showError(ctx,e.message.toString())
                 e.printStackTrace()
             }
         }
@@ -335,12 +329,12 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             try { // Setting image on image view using Bitmap
                 val bitmap = MediaStore.Images.Media
                     .getBitmap(
-                        contentResolver,
+                        ctx.contentResolver,
                         filePath
                     )
-                ivMJemaatImage.setImageBitmap(rotateImage(bitmap))
+                ivProfileImage.setImageBitmap(rotateImage(bitmap))
             } catch (e: IOException) { // Log the exception
-                showError(this,e.message.toString())
+                showError(ctx,e.message.toString())
                 e.printStackTrace()
             }
         }
@@ -404,24 +398,21 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             matrix, true)
     }
 
-    fun getRealPathFromURI(uri: Uri): String {
+    private fun getRealPathFromURI(uri: Uri): String {
         @SuppressWarnings("deprecation")
-        val cursor = managedQuery(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null);
+        val cursor = requireActivity().managedQuery(uri, arrayOf(MediaStore.Images.Media.DATA), null, null, null);
         val column_index = cursor
             .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);
     }
-    private fun generateJemaatId() : String{
-        return "J${mDatabase.push().key.toString()}"
-    }
 
-    private fun initSpinners(){
-        spGenderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,genderItems)
+    private fun initSpinner(){
+        spGenderAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,genderItems)
         spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spMJemaatJenisKelamin.adapter = spGenderAdapter
-        spMJemaatJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spProfileJenisKelamin.adapter = spGenderAdapter
+        spProfileJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -436,13 +427,13 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }
 
         }
-        spMJemaatJenisKelamin.gravity = Gravity.CENTER
+        spProfileJenisKelamin.gravity = Gravity.CENTER
 
-        spGolDarahAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,golDarahItems)
+        spGolDarahAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,golDarahItems)
         spGolDarahAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spMJemaatGolDarah.adapter = spGolDarahAdapter
-        spMJemaatGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spProfileGolDarah.adapter = spGolDarahAdapter
+        spProfileGolDarah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -457,13 +448,13 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }
 
         }
-        spMJemaatGolDarah.gravity = Gravity.CENTER
+        spProfileGolDarah.gravity = Gravity.CENTER
 
-        spProvinsiAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,provinsiSpinnerItems)
+        spProvinsiAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,provinsiSpinnerItems)
         spProvinsiAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spMJemaatProvinsi.adapter = spProvinsiAdapter
-        spMJemaatProvinsi.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spProfileProvinsi.adapter = spProvinsiAdapter
+        spProfileProvinsi.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -480,14 +471,14 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }
 
         }
-        spMJemaatProvinsi.gravity = Gravity.CENTER
+        spProfileProvinsi.gravity = Gravity.CENTER
 
         // kota spinner
-        spKotaAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kotaSpinnerItems)
+        spKotaAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,kotaSpinnerItems)
         spKotaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spMJemaatKotaKabupaten.adapter = spKotaAdapter
-        spMJemaatKotaKabupaten.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spProfileKotaKabupaten.adapter = spKotaAdapter
+        spProfileKotaKabupaten.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -504,14 +495,14 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }
 
         }
-        spMJemaatKotaKabupaten.gravity = Gravity.CENTER
+        spProfileKotaKabupaten.gravity = Gravity.CENTER
 
         // kecamatan spinner
-        spKecamatanAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kecamatanSpinnerItems)
+        spKecamatanAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,kecamatanSpinnerItems)
         spKecamatanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spMJemaatKecamatan.adapter = spKecamatanAdapter
-        spMJemaatKecamatan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spProfileKecamatan.adapter = spKecamatanAdapter
+        spProfileKecamatan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -528,14 +519,14 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }
 
         }
-        spMJemaatKecamatan.gravity = Gravity.CENTER
+        spProfileKecamatan.gravity = Gravity.CENTER
 
         // kelurahan
-        spKelurahanAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,kelurahanSpinnerItems)
+        spKelurahanAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,kelurahanSpinnerItems)
         spKelurahanAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spMJemaatKelurahan.adapter = spKelurahanAdapter
-        spMJemaatKelurahan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spProfileKelurahan.adapter = spKelurahanAdapter
+        spProfileKelurahan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -550,90 +541,61 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             }
 
         }
-        spMJemaatKelurahan.gravity = Gravity.CENTER
+        spProfileKelurahan.gravity = Gravity.CENTER
+
     }
 
     private fun initDateListener(){
-        tanggalBaptisListener =
-            DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-                cal.set(Calendar.YEAR, year)
-                cal.set(Calendar.MONTH, monthOfYear)
-                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                tvMJemaatTanggalBaptis.text = simpleDateFormat().format(cal.time)
-            }
-
         tanggalLahirListener =
             DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, monthOfYear)
                 cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                tvMJemaatTanggalLahir.text = simpleDateFormat().format(cal.time)
+                tvProfileTanggalLahir.text = simpleDateFormat().format(cal.time)
             }
     }
 
-    private fun fetchData(){
-        etMJemaatName.setText(currentJemaat.NAMA)
-        etMJemaatAlamat.setText(currentJemaat.ALAMAT)
-        etMJemaatNoHp.setText(currentJemaat.NO_TEL)
-        etMJemaatNote.setText(currentJemaat.NOTE)
-        spMJemaatGolDarah.setSelection(golDarahItems.indexOf(currentJemaat.GOL_DARAH))
-        spMJemaatJenisKelamin.setSelection(genderItems.indexOf(currentJemaat.GENDER))
-        swMJemaatBaptis.isChecked = currentJemaat.BAPTIS!!
-        etMJemaatTempatBaptis.setText(currentJemaat.TEMPAT_BAPTIS)
-        tvMJemaatTanggalLahir.text = currentJemaat.TANGGAL_LAHIR
-        etMJemaatTempatLahir.setText(currentJemaat.TEMPAT_LAHIR)
-        tvMJemaatTanggalBaptis.text = currentJemaat.TANGGAL_BAPTIS
-        etMJemaatNoSertifikat.setText(currentJemaat.NO_SERTIFIKAT)
-        etMJemaatCreatedDate.setText(currentJemaat.CREATED_DATE)
-        etMJemaatUpdatedDate.setText(currentJemaat.UPDATED_DATE)
-
-        etMJemaatRT.setText(currentJemaat.RT)
-        etMJemaatRW.setText(currentJemaat.RW)
-
-        presenter.getUserName(currentJemaat.CREATED_BY.toString()){
-            etMJemaatCreatedBy.setText(it)
-        }
-        presenter.getUserName(currentJemaat.UPDATED_BY.toString()){
-            etMJemaatUpdatedBy.setText(it)
-        }
-        if (currentJemaat.IMAGE != "")
-            Glide.with(this).load(currentJemaat.IMAGE).into(ivMJemaatImage)
-
-    }
-
     private fun loading(){
-        pbMJemaat.visibility = View.VISIBLE
+        btnProfileSave.isEnabled = false
+        pbProfile.visibility = View.VISIBLE
     }
 
-    private fun endLoading(){
-        pbMJemaat.visibility = View.GONE
+    private fun unLoading(){
+        btnProfileSave.isEnabled = true
+        pbProfile.visibility = View.GONE
+    }
+
+    private fun fetchData(){
+        etProfileName.setText(currentUser.NAME)
+        etProfileAlamat.setText(currentUser.ALAMAT)
+        etProfileNoHp.setText(currentUser.NO_TEL)
+        etProfileRT.setText(currentUser.RT)
+        etProfileRW.setText(currentUser.RW)
+        etProfileTempatLahir.setText(currentUser.TEMPAT_LAHIR)
+        tvProfileTanggalLahir.text = currentUser.TANGGAL_LAHIR
+        if (currentUser.IMAGE != "")
+            Glide.with(ctx).load(currentUser.IMAGE).into(ivProfileImage)
+        spProfileGolDarah.setSelection(golDarahItems.indexOf(currentUser.GOL_DARAH))
+        spProfileJenisKelamin.setSelection(genderItems.indexOf(currentUser.GENDER))
     }
 
     override fun loadData(dataSnapshot: DataSnapshot, response: String) {
-        if (response == EMessageResult.FETCH_JEMAAT_BY_KEY_SUCCESS.toString()){
-            if (dataSnapshot.exists()){
-                val item = dataSnapshot.getValue(Jemaat::class.java)
-                if (item != null) {
-                    currentJemaat = item
-                    presenter.retrieveProvinsi()
-                    fetchData()
+        if (isVisible && isResumed){
+            if (response == EMessageResult.FETCH_USER_SUCCESS.toString()){
+                if (dataSnapshot.exists()){
+                    val item = dataSnapshot.getValue(User::class.java)
+                    if (item != null) {
+                        currentUser = item
+                        fetchData()
+                        presenter.retrieveProvinsi()
+                    }
                 }
+                btnProfileSave.isEnabled = true
             }
         }
     }
 
     override fun response(message: String) {
-        if (message == EMessageResult.SUCCESS.toString()){
-            toast("Save Success")
-            finish()
-            btnMJemaatSave.isEnabled = true
-            endLoading()
-        }
-        else{
-            btnMJemaatSave.isEnabled = true
-            toast(message)
-            endLoading()
-        }
     }
 
     override fun showProvinsi(provinsi: List<provinsi>) {
@@ -646,7 +608,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             provinsiSpinnerItems.add(data.nama.toString())
         }
         if (!loadProvinsi){
-            spMJemaatProvinsi.setSelection(provinsiSpinnerItems.indexOf(currentJemaat.PROVINSI))
+            spProfileProvinsi.setSelection(provinsiSpinnerItems.indexOf(currentUser.PROVINSI))
             loadProvinsi = true
         }
         spProvinsiAdapter.notifyDataSetChanged()
@@ -662,7 +624,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             kotaSpinnerItems.add(data.nama.toString())
         }
         if (!loadKota){
-            spMJemaatKotaKabupaten.setSelection(kotaSpinnerItems.indexOf(currentJemaat.KOTA))
+            spProfileKotaKabupaten.setSelection(kotaSpinnerItems.indexOf(currentUser.KOTA))
             loadKota = true
         }
         spKotaAdapter.notifyDataSetChanged()
@@ -679,7 +641,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             kecamatanSpinnerItems.add(data.nama.toString())
         }
         if (!loadKecamatan){
-            spMJemaatKecamatan.setSelection(kecamatanSpinnerItems.indexOf(currentJemaat.KECAMATAN))
+            spProfileKecamatan.setSelection(kecamatanSpinnerItems.indexOf(currentUser.KECAMATAN))
             loadKecamatan = true
         }
         spKecamatanAdapter.notifyDataSetChanged()
@@ -695,10 +657,10 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
             kelurahanSpinnerItems.add(data.nama.toString())
         }
         if (!loadKelurahan){
-            spMJemaatKelurahan.setSelection(kelurahanSpinnerItems.indexOf(currentJemaat.KELURAHAN))
+            spProfileKelurahan.setSelection(kelurahanSpinnerItems.indexOf(currentUser.KELURAHAN))
             loadKelurahan = true
         }
         spKelurahanAdapter.notifyDataSetChanged()
     }
-}
 
+}
