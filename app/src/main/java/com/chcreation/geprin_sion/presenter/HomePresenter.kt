@@ -16,6 +16,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import java.lang.Exception
+import java.util.*
 
 class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, private val database: DatabaseReference, private val context: Context){
 
@@ -87,6 +88,63 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
 
     }
 
+    fun updateContent(contentId:String, content: Content,callback: (success:Boolean) ->Unit){
+        try{
+            postListener = object : ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                    database.removeEventListener(this)
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    if (p0.exists()){
+                        for (data in p0.children){
+                            val item = data.getValue(Content::class.java)
+                            if (item != null) {
+                                val values  = hashMapOf(
+                                    EContent.USER_IMAGE.toString() to content.USER_IMAGE,
+                                    EContent.IMAGE_CONTENT.toString() to content.IMAGE_CONTENT,
+                                    EContent.LINK.toString() to content.LINK,
+                                    EContent.USER_CODE.toString() to content.USER_CODE,
+                                    EContent.USER_NAME.toString() to content.USER_NAME,
+                                    EContent.CAPTION.toString() to content.CAPTION,
+                                    EContent.TYPE.toString() to content.TYPE,
+                                    EContent.CHANNEL.toString() to content.CHANNEL,
+                                    EContent.TOTAL_LIKE.toString() to item.TOTAL_LIKE,
+                                    EContent.KEY.toString() to content.KEY,
+                                    EContent.CREATED_DATE.toString() to content.CREATED_DATE,
+                                    EContent.UPDATED_DATE.toString() to content.UPDATED_DATE,
+                                    EContent.CREATED_BY.toString() to content.CREATED_BY,
+                                    EContent.UPDATED_BY.toString() to content.UPDATED_BY
+                                )
+                                database.child(getSinode())
+                                    .child(getPost())
+                                    .child(ETable.CONTENT.toString())
+                                    .child(data.key.toString())
+                                    .setValue(values).addOnFailureListener {
+                                        callback(false)
+                                    }
+                                    .addOnSuccessListener {
+                                        callback(true)
+                                    }
+                            }
+                        }
+                    }else
+                        callback(false)
+                }
+
+            }
+            database.child(getSinode())
+                .child(getPost())
+                .child(ETable.CONTENT.toString())
+                .orderByChild(EContent.KEY.toString())
+                .equalTo(contentId)
+                .addListenerForSingleValueEvent(postListener)
+        }catch (e:Exception){
+            showError(context,e.message.toString())
+            e.printStackTrace()
+        }
+    }
+
     fun updateTotalLikes(contentId:String, value:Int,callback: (totalLike: Int) ->Unit){
         try{
             postListener = object : ValueEventListener {
@@ -103,6 +161,20 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
                                     .child(getPost())
                                     .child(ETable.CONTENT.toString())
                                     .child(data.key.toString())
+                                    .child(EContent.UPDATED_DATE.toString())
+                                    .setValue(dateFormat().format(Date()))
+
+                                database.child(getSinode())
+                                    .child(getPost())
+                                    .child(ETable.CONTENT.toString())
+                                    .child(data.key.toString())
+                                    .child(EContent.UPDATED_BY.toString())
+                                    .setValue(auth.currentUser!!.uid)
+
+                                database.child(getSinode())
+                                    .child(getPost())
+                                    .child(ETable.CONTENT.toString())
+                                    .child(data.key.toString())
                                     .child(EContent.TOTAL_LIKE.toString())
                                     .setValue(item.TOTAL_LIKE!! + value)
                                     .addOnSuccessListener {
@@ -113,7 +185,8 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
                                     }
                             }
                         }
-                    }
+                    }else
+                        callback(-99)
                 }
 
             }

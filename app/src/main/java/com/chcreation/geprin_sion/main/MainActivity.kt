@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home,R.id.nav_jemaat,R.id.nav_kidung,R.id.nav_archive,R.id.nav_profile
+                R.id.nav_home,R.id.nav_jemaat,R.id.nav_remaja,R.id.nav_kidung,R.id.nav_archive,R.id.nav_profile,R.id.nav_about
             ), drawerLayout
         )
 
@@ -127,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         HomeFragment.contentItems.clear()
         HomeFragment.likeItems.clear()
         HomeFragment.likeKeyItems.clear()
+        HomeFragment.position = 0
     }
 //    override fun onCreateOptionsMenu(menu: Menu): Boolean {
 //        // Inflate the menu; this adds items to the action bar if it is present.

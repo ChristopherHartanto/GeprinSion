@@ -31,7 +31,7 @@ class ProfilePresenter(private val view: MainView,
 
     }
 
-    fun updateContentUserData(userKey: String, userName: String, userImage: String){
+    suspend fun updateContentUserData(userKey: String, userName: String, userImage: String){
         try{
             postListener = object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
@@ -45,14 +45,18 @@ class ProfilePresenter(private val view: MainView,
                             .child(ETable.CONTENT.toString())
                             .child(data.key.toString())
                             .child(EContent.USER_NAME.toString())
-                            .setValue(userName)
+                            .setValue(userName).addOnFailureListener {
+                                view.response(it.message.toString())
+                            }
 
                         database.child(getSinode())
                             .child(getPost())
                             .child(ETable.CONTENT.toString())
                             .child(data.key.toString())
                             .child(EContent.USER_IMAGE.toString())
-                            .setValue(userImage)
+                            .setValue(userImage).addOnFailureListener {
+                                view.response(it.message.toString())
+                            }
                     }
                 }
 
@@ -69,7 +73,7 @@ class ProfilePresenter(private val view: MainView,
         }
     }
 
-    fun updateUser(user: User, callback: (success: Boolean) ->Unit){
+    suspend fun updateUser(user: User, callback: (success: Boolean) ->Unit){
         try {
             val values  = hashMapOf(
                 EUser.NAME.toString() to user.NAME,

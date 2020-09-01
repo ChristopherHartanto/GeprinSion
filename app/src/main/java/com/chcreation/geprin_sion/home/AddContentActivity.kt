@@ -23,7 +23,11 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.home.HomeFragment.Companion.contentItems
+import com.chcreation.geprin_sion.home.HomeFragment.Companion.editContent
+import com.chcreation.geprin_sion.home.HomeFragment.Companion.position
 import com.chcreation.geprin_sion.jemaat.ManageJemaatActivity
 import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.HomePresenter
@@ -66,13 +70,13 @@ class AddContentActivity : AppCompatActivity(), MainView {
     private var filePath: Uri? = null
     private var contentId = ""
     private var isPosting = false
+    private var message = "Post"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_content)
 
-        supportActionBar?.title = "Create Post"
-
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
         presenter = HomePresenter(this,mAuth,mDatabase, this)
@@ -101,6 +105,15 @@ class AddContentActivity : AppCompatActivity(), MainView {
 
         contentId = generateContentId()
         tvAddContentUserName.text = getName(this)
+        if (getImage(this) != "")
+            Glide.with(this).load(getImage(this)).into(ivAddContentUserImage)
+
+        if (editContent){
+            message = "Update"
+            fetchData()
+        }
+
+        supportActionBar?.title = "$message Post"
     }
 
     override fun onStart() {
@@ -128,6 +141,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
             super.onBackPressed()
     }
 
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.content, menu)
@@ -145,16 +159,19 @@ class AddContentActivity : AppCompatActivity(), MainView {
                     if (caption == "")
                         etContent.error = "Please Fill the Field"
                     else{
-                        alert ("Are You Sure Want to Post?"){
-                            title = "Post"
+
+                        alert ("Are You Sure Want to $message?"){
+                            title = this@AddContentActivity.message
                             yesButton {
-                                toast("Your Content Will be Post Shortly . . .")
+                                toast("Your Content Will be ${this@AddContentActivity.message} Shortly . . .")
                                 finish()
                                 isPosting = true
-                                if (filePath == null)
-                                    createContent("")
-                                else
-                                    uploadImage()
+
+                                when {
+                                    filePath != null -> uploadImage()
+                                    editContent -> updateContent("")
+                                    else -> createContent("")
+                                }
                             }
                             noButton {
 
@@ -164,7 +181,22 @@ class AddContentActivity : AppCompatActivity(), MainView {
                 }
                 true
             }
+            android.R.id.home ->{
+                finish()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun fetchData(){
+        etContent.setText(contentItems[position].CAPTION)
+        etAddContentLink.setText(contentItems[position].LINK)
+        spContentType.setSelection(typeItems.indexOf(contentItems[position].TYPE))
+
+        if (contentItems[position].IMAGE_CONTENT != ""){
+            ivAddContentImage.visibility = View.VISIBLE
+            Glide.with(this).load(contentItems[position].IMAGE_CONTENT).into(ivAddContentImage)
         }
     }
 
@@ -177,6 +209,24 @@ class AddContentActivity : AppCompatActivity(), MainView {
             getImage(this), mAuth.currentUser!!.uid, getName(this@AddContentActivity),
             false,0,image,caption,selectedType,link,contentId, dateFormat().format(Date()),
             dateFormat().format(Date()), mAuth.currentUser!!.uid, mAuth.currentUser!!.uid))
+    }
+
+    private fun updateContent(image: String){
+
+        val caption = etContent.text.toString().trim()
+        val link = etAddContentLink.text.toString().trim()
+
+        val imageContent =
+        if (image == "") contentItems[position].IMAGE_CONTENT
+        else image
+
+        presenter.updateContent(
+            contentItems[position].KEY.toString(),Content(
+            getImage(this), mAuth.currentUser!!.uid, getName(this@AddContentActivity),
+            false,0,imageContent,caption,selectedType,"",link,contentItems[position].KEY, contentItems[position].CREATED_DATE,
+            dateFormat().format(Date()), contentItems[position].CREATED_BY, mAuth.currentUser!!.uid)){
+
+        }
     }
 
     private fun uploadImage(){
@@ -197,7 +247,10 @@ class AddContentActivity : AppCompatActivity(), MainView {
             }).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val downloadUri = task.result
-                    createContent(downloadUri.toString())
+                    if (editContent)
+                        updateContent(downloadUri.toString())
+                    else
+                        createContent(downloadUri.toString())
                 } else {
                     isPosting = false
                     toast("Failed to Save Image")

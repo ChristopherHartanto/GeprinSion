@@ -105,7 +105,8 @@ enum class EContent{
     USER_IMAGE,
     STATUS,
     TYPE,
-    KEY
+    KEY,
+    CHANNEL
 }
 
 enum class EUser{
@@ -224,6 +225,11 @@ enum class EContentType{
     Pengumuman,
     File,
     Streaming
+}
+
+enum class EChannel{
+    All,
+    Remaja
 }
 
 enum class ESharedPreference{

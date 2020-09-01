@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.model.EChannel
 import com.chcreation.geprin_sion.model.EContentType
 import com.chcreation.geprin_sion.util.normalClickAnimation
 import com.chcreation.geprin_sion.util.showError
@@ -23,9 +24,10 @@ import java.util.regex.Pattern
 
 
 class HomeRecyclerViewAdapter(private val context: Context,
+                              private val userId: String,
                               private val fragmentActivity: FragmentActivity,
                               private val items: List<Content>,
-                              private val listener: (position: Int, imageLink: String) -> Unit)
+                              private val listener: (position: Int, imageLink: String, edit: Boolean) -> Unit)
     : RecyclerView.Adapter<HomeRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
@@ -38,7 +40,7 @@ class HomeRecyclerViewAdapter(private val context: Context,
         )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindItem(items[position],fragmentActivity,listener, position,context)
+        holder.bindItem(items[position],fragmentActivity,userId,listener, position,context)
     }
 
     override fun getItemCount(): Int = items.size
@@ -54,8 +56,10 @@ class HomeRecyclerViewAdapter(private val context: Context,
         private val caption = view.findViewById<TextView>(R.id.tvRowHomeCaption)
         private val link = view.findViewById<TextView>(R.id.tvRowHomeLink)
         private val type = view.findViewById<TextView>(R.id.tvRowHomeType)
+        private val edit = view.findViewById<TextView>(R.id.tvRowHomeEdit)
 
-        fun bindItem(content: Content, fragmentActivity: FragmentActivity, listener: (position: Int, imageLink: String) -> Unit, position: Int,context: Context) {
+        fun bindItem(content: Content, fragmentActivity: FragmentActivity, userId: String,
+                     listener: (position: Int, imageLink: String, edit: Boolean) -> Unit, position: Int,context: Context) {
             var imageLink = ""
 
             if (content.USER_IMAGE != ""){
@@ -64,6 +68,12 @@ class HomeRecyclerViewAdapter(private val context: Context,
             }
             else
                 userImage.imageResource = R.drawable.default_image
+
+            if (userId == content.CREATED_BY){
+                edit.visibility = View.VISIBLE
+            }else{
+                edit.visibility = View.GONE
+            }
 
             if (content.IMAGE_CONTENT == "" && content.LINK!!.toLowerCase(Locale.getDefault()).contains("youtu")){
                 contentImage.visibility = View.VISIBLE
@@ -84,7 +94,7 @@ class HomeRecyclerViewAdapter(private val context: Context,
             if (content.LIKE!!){
                 like.imageResource = R.drawable.like
             }
-            else
+            else if (!content.LIKE!!)
                 like.imageResource = R.drawable.unlike
 
             if (content.TOTAL_LIKE!! > 0){
@@ -106,17 +116,23 @@ class HomeRecyclerViewAdapter(private val context: Context,
             caption.text = content.CAPTION
             type.text = content.TYPE
 
+            edit.onClick {
+                edit.startAnimation(normalClickAnimation())
+                listener(position,"",true)
+            }
+
             contentImage.onClick {
                 contentImage.startAnimation(normalClickAnimation())
-                listener(position,imageLink)
+                listener(position,imageLink,false)
             }
 
             like.onClick {
                 like.startAnimation(normalClickAnimation())
-                listener(position,"")
+                listener(position,"",false)
             }
 
             link.onClick {
+                link.startAnimation(normalClickAnimation())
                 openWebsite(content.LINK.toString(),context,fragmentActivity)
             }
         }
@@ -161,6 +177,7 @@ data class Content(
     var IMAGE_CONTENT: String? = "",
     var CAPTION: String? = "",
     var TYPE: String? = EContentType.Pengumuman.toString(),
+    var CHANNEL: String? = EChannel.All.toString(),
     var LINK: String? = "",
     var KEY: String? = "",
     var CREATED_DATE: String? = "",

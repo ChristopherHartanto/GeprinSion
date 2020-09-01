@@ -45,6 +45,8 @@ import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.activity_add_content.*
 import kotlinx.android.synthetic.main.activity_manage_jemaat.*
 import kotlinx.android.synthetic.main.fragment_profile.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.selector
 import org.jetbrains.anko.support.v4.ctx
@@ -142,8 +144,10 @@ class ProfileFragment : Fragment(), MainView, DaerahIndonesiaView {
 
     override fun onStart() {
         super.onStart()
-        btnProfileSave.isEnabled = false
-        presenter.retrieveUser(mAuth.currentUser!!.uid)
+        if (filePath == null){
+            btnProfileSave.isEnabled = false
+            presenter.retrieveUser(mAuth.currentUser!!.uid)
+        }
     }
     private fun uploadImage(){
         if(filePath != null){
@@ -191,30 +195,35 @@ class ProfileFragment : Fragment(), MainView, DaerahIndonesiaView {
         val rw = etProfileRW.text.toString()
         val image = if (uploadImage == "") currentUser.IMAGE.toString() else uploadImage
 
-        presenter.updateUser(User(name,image,currentUser.EMAIL,selectedProvinsi,selectedKota,
-            selectedKecamatan,selectedKelurahan,rt,rw,alamat,selectedGender,selectedGolDarah,
-            tempatLahir,tanggaLahir,noTel,currentUser.ACTIVE,currentUser.CREATED_DATE,currentUser.UPDATED_DATE,
-            currentUser.STATUS)){
-            if (isVisible && isResumed){
-                if (it){
-                    setDataPreference(
-                        ctx,
-                        ESharedPreference.NAME.toString(),
-                        name,
-                        EDataType.STRING
-                    )
-                    setDataPreference(
-                        ctx,
-                        ESharedPreference.IMAGE.toString(),
-                        image,
-                        EDataType.STRING
-                    )
-                    toast("Update Success")
-                }
-                else
-                    toast("Update Failed")
+        GlobalScope.launch {
+            if (uploadImage != "" || name != currentUser.NAME)
+                presenter.updateContentUserData(mAuth.currentUser!!.uid,name,uploadImage)
 
-                unLoading()
+            presenter.updateUser(User(name,image,currentUser.EMAIL,selectedProvinsi,selectedKota,
+                selectedKecamatan,selectedKelurahan,rt,rw,alamat,selectedGender,selectedGolDarah,
+                tempatLahir,tanggaLahir,noTel,currentUser.ACTIVE,currentUser.CREATED_DATE,currentUser.UPDATED_DATE,
+                currentUser.STATUS)){
+                if (isVisible && isResumed){
+                    if (it){
+                        setDataPreference(
+                            ctx,
+                            ESharedPreference.NAME.toString(),
+                            name,
+                            EDataType.STRING
+                        )
+                        setDataPreference(
+                            ctx,
+                            ESharedPreference.IMAGE.toString(),
+                            image,
+                            EDataType.STRING
+                        )
+                        toast("Update Success")
+                    }
+                    else
+                        toast("Update Failed")
+
+                    unLoading()
+                }
             }
         }
     }

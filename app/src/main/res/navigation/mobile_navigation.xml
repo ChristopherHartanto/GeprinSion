@@ -26,6 +26,14 @@
     </fragment>
 
     <fragment
+        android:id="@+id/nav_remaja"
+        android:name="com.chcreation.geprin_sion.remaja.RemajaFragment"
+        android:label="Data Jemaat"
+        tools:layout="@layout/fragment_remaja">
+
+    </fragment>
+
+    <fragment
         android:id="@+id/nav_kidung"
         android:name="com.chcreation.geprin_sion.kidung.KidungFragment"
         android:label="Kidung"
@@ -46,6 +54,14 @@
         android:name="com.chcreation.geprin_sion.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_about"
+        android:name="com.chcreation.geprin_sion.about.AboutFragment"
+        android:label="About"
+        tools:layout="@layout/fragment_about">
 
     </fragment>
 </navigation>
