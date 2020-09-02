@@ -9,19 +9,27 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 
 import com.chcreation.geprin_sion.R
+import com.chcreation.geprin_sion.home.AddContentActivity
+import com.chcreation.geprin_sion.home.Content
 import com.chcreation.geprin_sion.home.ContentDetailActivity
+import com.chcreation.geprin_sion.home.HomeFragment
 import com.chcreation.geprin_sion.model.EContent
+import com.chcreation.geprin_sion.model.EContentType
 import com.chcreation.geprin_sion.model.EMessageResult
+import com.chcreation.geprin_sion.model.EStatusCode
 import com.chcreation.geprin_sion.presenter.HomePresenter
+import com.chcreation.geprin_sion.remaja.RemajaFragment
+import com.chcreation.geprin_sion.util.normalClickAnimation
 import com.chcreation.pointofsale.view.MainView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_archive.*
-import org.jetbrains.anko.support.v4.ctx
-import org.jetbrains.anko.support.v4.intentFor
-import org.jetbrains.anko.support.v4.onRefresh
+import org.jetbrains.anko.noButton
+import org.jetbrains.anko.sdk27.coroutines.onClick
+import org.jetbrains.anko.support.v4.*
+import org.jetbrains.anko.yesButton
 
 /**
  * A simple [Fragment] subclass.
@@ -33,6 +41,8 @@ class ArchiveFragment : Fragment(), MainView {
     private lateinit var presenter: HomePresenter
     private lateinit var rvAdapter: ArchiveRecylcerViewAdapter
     private var contentItems = mutableListOf<Content>()
+    private var filteredContentItems = mutableListOf<Content>()
+    private var selectedType = EContentType.All.toString()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,8 +60,21 @@ class ArchiveFragment : Fragment(), MainView {
         presenter = HomePresenter(this,mAuth,mDatabase, ctx)
 
         srArchive.setColorSchemeColors(Color.BLUE, Color.RED)
-        rvAdapter = ArchiveRecylcerViewAdapter(ctx,contentItems){
+        rvAdapter = ArchiveRecylcerViewAdapter(ctx,filteredContentItems){
             startActivity(intentFor<ArchiveViewImageActivity>(EContent.IMAGE_CONTENT.toString() to contentItems[it].IMAGE_CONTENT))
+        }
+
+        llArchiveFilter.onClick {
+            llArchiveFilter.startAnimation(normalClickAnimation())
+
+            val options = mutableListOf(EContentType.All.toString(), EContentType.Pengumuman.toString(),
+                EContentType.Warta.toString(),EContentType.Streaming.toString(),EContentType.File.toString())
+            selector("Filter By",options) {
+                    dialogInterface, i ->
+                selectedType = options[i]
+                tvArchiveFilterTitle.text = options[i]
+                fetchData()
+            }
         }
 
         rvArchive.apply {
@@ -70,6 +93,18 @@ class ArchiveFragment : Fragment(), MainView {
         presenter.retrieveContent()
     }
 
+    private fun fetchData(){
+        filteredContentItems.clear()
+
+        for (data in contentItems){
+            if (selectedType == EContentType.All.toString() || selectedType == data.TYPE){
+                filteredContentItems.add(data)
+            }
+        }
+
+        rvAdapter.notifyDataSetChanged()
+    }
+
     override fun loadData(dataSnapshot: DataSnapshot, response: String) {
         if (isVisible && isResumed){
             if (response == EMessageResult.FETCH_CONTENT_SUCCESS.toString()){
@@ -78,13 +113,13 @@ class ArchiveFragment : Fragment(), MainView {
 
                     for (data in dataSnapshot.children){
                         val item = data.getValue(Content::class.java)
-                        if (item != null && item.IMAGE_CONTENT != ""){
+                        if (item != null && item.IMAGE_CONTENT != "" && item.STATUS == EStatusCode.ACTIVE.toString()){
                             contentItems.add(item)
                         }
                     }
                 }
                 contentItems.reverse()
-                rvAdapter.notifyDataSetChanged()
+                fetchData()
             }
             srArchive.isRefreshing = false
         }

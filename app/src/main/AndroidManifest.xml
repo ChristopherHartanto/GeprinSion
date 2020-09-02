@@ -23,7 +23,10 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".archive.ArchiveViewImageActivity"></activity>
+        <activity android:name=".remaja.AddRemajaActivity"></activity>
+        <activity android:name=".remaja.ForumActivity" />
+        <activity android:name=".remaja.AbsentActivity" />
+        <activity android:name=".archive.ArchiveViewImageActivity" />
         <activity android:name=".home.ContentDetailActivity" />
         <activity android:name=".home.AddContentActivity" />
         <activity android:name=".user.UserActivity" />

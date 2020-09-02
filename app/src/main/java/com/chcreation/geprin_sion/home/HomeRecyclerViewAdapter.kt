@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.model.EChannel
 import com.chcreation.geprin_sion.model.EContentType
+import com.chcreation.geprin_sion.model.EStatusCode
 import com.chcreation.geprin_sion.util.normalClickAnimation
 import com.chcreation.geprin_sion.util.showError
 import org.jetbrains.anko.imageResource
@@ -180,6 +181,7 @@ data class Content(
     var CHANNEL: String? = EChannel.All.toString(),
     var LINK: String? = "",
     var KEY: String? = "",
+    var STATUS: String? = EStatusCode.ACTIVE.toString(),
     var CREATED_DATE: String? = "",
     var UPDATED_DATE: String? = "",
     var CREATED_BY: String? = "",

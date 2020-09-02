@@ -207,7 +207,7 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
     private fun createXlsx() {
         try{
             toast("Generating XLSX . . . ")
-            val fileName = "Data Jemaat${dateFormat().format(Date())}.xlsx"
+            val fileName = "Data Jemaat.xlsx"
             val path = ctx.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
 //            val dir = File(ctx.filesDir,"test")
 //            if (!dir.exists())

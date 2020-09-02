@@ -6,7 +6,8 @@ enum class ETable{
     ADMIN,
     CONTENT,
     MERCHANT,
-    LIKE
+    LIKE,
+    REMAJA
 }
 
 enum class EAbout{
@@ -81,6 +82,39 @@ enum class EJemaat{
     NO_SERTIFIKAT,
     TEMPAT_BAPTIS,
     TANGGAL_BAPTIS,
+    IMAGE,
+    ID,
+    KEY,
+    STATUS
+}
+
+enum class ERemaja{
+    CREATED_DATE,
+    UPDATED_DATE,
+    CREATED_BY,
+    UPDATED_BY,
+    NAMA,
+    KELAS,
+    WARNA_FAV,
+    SEKOLAH,
+    HOBBY,
+    ALAMAT,
+    GENDER,
+    TEMPAT_LAHIR,
+    TANGGAL_LAHIR,
+    NO_TEL,
+    NOTE,
+    IS_PADUS,
+    JENIS_SUARA,
+    IS_PELAYANAN,
+    LITURGOS,
+    PENYAMBUT,
+    PIANIS,
+    GITARIS,
+    LCD,
+    PENGURUS,
+    ABSENSI,
+    KOLEKTOR,
     IMAGE,
     ID,
     KEY,
@@ -179,6 +213,7 @@ enum class EMessageResult{
     DELETE_SUCCESS,
     FAILURE,
     FETCH_JEMAAT_SUCCESS,
+    FETCH_REMAJA_SUCCESS,
     FETCH_JEMAAT_BY_KEY_SUCCESS,
     FETCH_LIKE_SUCCESS,
     FETCH_USER_SUCCESS,
@@ -208,19 +243,8 @@ enum class EStatusUser{
     DE_ACTIVE
 }
 
-enum class EStatusStock{
-    INBOUND,
-    OUTBOUND,
-    MISSING,
-    CANCEL
-}
-
-enum class EUserGroup{
-    MANAGER,
-    WAITER
-}
-
 enum class EContentType{
+    All,
     Warta,
     Pengumuman,
     File,
@@ -229,6 +253,7 @@ enum class EContentType{
 
 enum class EChannel{
     All,
+    Umum,
     Remaja
 }
 

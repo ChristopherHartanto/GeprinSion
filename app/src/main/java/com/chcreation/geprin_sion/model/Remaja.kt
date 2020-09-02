@@ -1,0 +1,33 @@
+package com.chcreation.geprin_sion.model
+
+data class Remaja(
+    var NAMA: String? = "",
+    var GENDER: String? = "",
+    var TEMPAT_LAHIR: String? = "",
+    var TANGGAL_LAHIR: String? = "",
+    var NO_TEL: String? = "",
+    var ALAMAT: String? = "",
+    var KELAS: String? = "",
+    var SEKOLAH: String? = "",
+    var HOBBY: String? = "",
+    var WARNA_FAV: String? = "",
+    var NOTE: String? = "",
+    var IS_PADUS: Boolean? = false,
+    var JENIS_SUARA: String? = "",
+    var IS_PELAYANAN: Boolean? = false,
+    var LITURGOS: Boolean? = false,
+    var PENYAMBUT: Boolean? = false,
+    var PIANIS: Boolean? = false,
+    var GITARIS: Boolean? = false,
+    var LCD: Boolean? = false,
+    var PENGURUS: Boolean? = false,
+    var ABSENSI: Boolean? = false,
+    var KOLEKTOR: Boolean? = false,
+    var CREATED_DATE: String? = "",
+    var UPDATED_DATE: String? = "",
+    var CREATED_BY: String? = "",
+    var UPDATED_BY: String? = "",
+    var IMAGE: String? = "",
+    var ID: String? = "",
+    var STATUS: String? = EStatusCode.ACTIVE.toString()
+)

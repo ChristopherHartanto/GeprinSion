@@ -6,9 +6,28 @@
     android:padding="2dp"
     android:layout_margin="2dp">
 
-    <ImageView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/ivRowArchive"/>
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/colorBlack"
+            android:text="Load Failed"
+            android:id="@+id/tvRowArchiveLoadFailed"
+            android:visibility="gone"/>
+        <ProgressBar
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:id="@+id/pbRowArchiveLoading"/>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/ivRowArchive"/>
+    </FrameLayout>
 
 </androidx.cardview.widget.CardView>

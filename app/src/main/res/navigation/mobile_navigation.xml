@@ -28,7 +28,7 @@
     <fragment
         android:id="@+id/nav_remaja"
         android:name="com.chcreation.geprin_sion.remaja.RemajaFragment"
-        android:label="Data Jemaat"
+        android:label="Remaja"
         tools:layout="@layout/fragment_remaja">
 
     </fragment>

@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.os.PersistableBundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
@@ -32,6 +33,7 @@ import com.chcreation.geprin_sion.jemaat.ManageJemaatActivity
 import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.HomePresenter
 import com.chcreation.geprin_sion.presenter.JemaatPresenter
+import com.chcreation.geprin_sion.remaja.RemajaFragment
 import com.chcreation.geprin_sion.util.*
 import com.chcreation.pointofsale.view.MainView
 import com.google.android.gms.tasks.Continuation
@@ -60,9 +62,12 @@ class AddContentActivity : AppCompatActivity(), MainView {
     private lateinit var presenter: HomePresenter
     private lateinit var storage: StorageReference
     private lateinit var spTypeAdapter: ArrayAdapter<String>
+    private lateinit var spChannelAdapter: ArrayAdapter<String>
+    private var channelItems = arrayListOf<String>(EChannel.All.toString(),EChannel.Umum.toString(),EChannel.Remaja.toString())
     private var typeItems = arrayListOf<String>(EContentType.File.toString(),EContentType.Pengumuman.toString(),
         EContentType.Streaming.toString(),EContentType.Warta.toString())
     private var selectedType = ""
+    private var selectedChannel = ""
     private var PICK_IMAGE_CAMERA  = 111
     private var CAMERA_PERMISSION  = 101
     private var PICK_IMAGE_GALLERY = 222
@@ -70,7 +75,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
     private var filePath: Uri? = null
     private var contentId = ""
     private var isPosting = false
-    private var message = "Post"
+    private var message = "Create"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,15 +108,37 @@ class AddContentActivity : AppCompatActivity(), MainView {
         }
         spContentType.gravity = Gravity.CENTER
 
+        spChannelAdapter = ArrayAdapter(ctx, android.R.layout.simple_spinner_item,channelItems)
+        spChannelAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spContentChannel.adapter = spChannelAdapter
+        spContentChannel.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                selectedChannel = channelItems[position]
+            }
+
+        }
+        spContentChannel.gravity = Gravity.CENTER
+
         contentId = generateContentId()
-        tvAddContentUserName.text = getName(this)
-        if (getImage(this) != "")
-            Glide.with(this).load(getImage(this)).into(ivAddContentUserImage)
 
         if (editContent){
             message = "Update"
             fetchData()
         }
+
+        tvAddContentUserName.text = getName(this)
+        if (getImage(this) != "")
+            Glide.with(this).load(getImage(this)).into(ivAddContentUserImage)
 
         supportActionBar?.title = "$message Post"
     }
@@ -129,7 +156,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
     override fun onBackPressed() {
         if (filePath != null || etContent.text.toString() != "" && !isPosting){
             alert ("Do You Want to Discard?"){
-                title = "Create Post"
+                title = "${this@AddContentActivity.message} Post"
                 yesButton {
                     super.onBackPressed()
                 }
@@ -140,7 +167,6 @@ class AddContentActivity : AppCompatActivity(), MainView {
         }else
             super.onBackPressed()
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -168,7 +194,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
                                 isPosting = true
 
                                 when {
-                                    filePath != null -> uploadImage()
+                                    filePath != null -> uploadImage(editContent)
                                     editContent -> updateContent("")
                                     else -> createContent("")
                                 }
@@ -188,15 +214,22 @@ class AddContentActivity : AppCompatActivity(), MainView {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
+    var currentContent = Content()
     private fun fetchData(){
-        etContent.setText(contentItems[position].CAPTION)
-        etAddContentLink.setText(contentItems[position].LINK)
-        spContentType.setSelection(typeItems.indexOf(contentItems[position].TYPE))
+        if (RemajaFragment.editRemaja)
+            currentContent = RemajaFragment.contentItems[position]
+        else
+            currentContent = contentItems[position]
 
-        if (contentItems[position].IMAGE_CONTENT != ""){
+        etContent.setText(currentContent.CAPTION)
+        etAddContentLink.setText(currentContent.LINK)
+        spContentType.setSelection(typeItems.indexOf(currentContent.TYPE))
+        spContentChannel.setSelection(channelItems.indexOf(currentContent.CHANNEL))
+        contentId = currentContent.KEY.toString()
+
+        if (currentContent.IMAGE_CONTENT != ""){
             ivAddContentImage.visibility = View.VISIBLE
-            Glide.with(this).load(contentItems[position].IMAGE_CONTENT).into(ivAddContentImage)
+            Glide.with(this).load(currentContent.IMAGE_CONTENT).into(ivAddContentImage)
         }
     }
 
@@ -207,7 +240,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
 
         presenter.createContent(Content(
             getImage(this), mAuth.currentUser!!.uid, getName(this@AddContentActivity),
-            false,0,image,caption,selectedType,link,contentId, dateFormat().format(Date()),
+            false,0,image,caption,selectedType,selectedChannel,link,contentId,EStatusCode.ACTIVE.toString(), dateFormat().format(Date()),
             dateFormat().format(Date()), mAuth.currentUser!!.uid, mAuth.currentUser!!.uid))
     }
 
@@ -217,19 +250,20 @@ class AddContentActivity : AppCompatActivity(), MainView {
         val link = etAddContentLink.text.toString().trim()
 
         val imageContent =
-        if (image == "") contentItems[position].IMAGE_CONTENT
+        if (image == "") currentContent.IMAGE_CONTENT
         else image
 
         presenter.updateContent(
-            contentItems[position].KEY.toString(),Content(
+            currentContent.KEY.toString(),Content(
             getImage(this), mAuth.currentUser!!.uid, getName(this@AddContentActivity),
-            false,0,imageContent,caption,selectedType,"",link,contentItems[position].KEY, contentItems[position].CREATED_DATE,
-            dateFormat().format(Date()), contentItems[position].CREATED_BY, mAuth.currentUser!!.uid)){
+            false,0,imageContent,caption,selectedType,selectedChannel,link,currentContent.KEY,
+                currentContent.STATUS,currentContent.CREATED_DATE,
+            dateFormat().format(Date()), currentContent.CREATED_BY, mAuth.currentUser!!.uid)){
 
         }
     }
 
-    private fun uploadImage(){
+    private fun uploadImage(isEdit: Boolean){
         if(filePath != null){
             val ref = storage.child(ETable.CONTENT.toString())
                 .child(contentId)
@@ -247,7 +281,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
             }).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val downloadUri = task.result
-                    if (editContent)
+                    if (isEdit)
                         updateContent(downloadUri.toString())
                     else
                         createContent(downloadUri.toString())
@@ -345,6 +379,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
 
     private fun openGallery(){
         intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.putExtra("test",true)
         startActivityForResult(
             intent,
             PICK_IMAGE_GALLERY
@@ -371,6 +406,7 @@ class AddContentActivity : AppCompatActivity(), MainView {
         }
         else if (requestCode == PICK_IMAGE_GALLERY && resultCode == Activity.RESULT_OK && data != null && data.data != null
         ) {
+            val a = data.getBooleanExtra("test",false)
             filePath = data.data
             currentPhotoPath = getRealPathFromURI(filePath!!)
             try { // Setting image on image view using Bitmap

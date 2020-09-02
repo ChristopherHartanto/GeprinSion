@@ -15,7 +15,7 @@
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/ivRowJemaatImage"/>
+            android:id="@+id/ivRowRemajaImage"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             android:textColor="@color/colorBlack"
             android:gravity="center_vertical"
             android:layout_marginHorizontal="8dp"
-            android:id="@+id/tvRowJemaatName"/>
+            android:id="@+id/tvRowRemajaName"/>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

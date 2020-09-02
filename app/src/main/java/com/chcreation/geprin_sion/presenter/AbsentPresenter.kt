@@ -18,7 +18,7 @@ import com.google.gson.Gson
 import java.lang.Exception
 import java.util.*
 
-class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, private val database: DatabaseReference, private val context: Context){
+class AbsentPresenter(private val view: MainView, private val auth: FirebaseAuth, private val database: DatabaseReference, private val context: Context){
 
     var postListener = object : ValueEventListener {
         override fun onCancelled(p0: DatabaseError) {
@@ -29,7 +29,7 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
 
     }
 
-    fun createContent(content: Content){
+    fun createRemaja(remaja: Remaja){
         try {
             postListener = object : ValueEventListener {
                 override fun onCancelled(p0: DatabaseError) {
@@ -46,24 +46,39 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
                     }
 
                     val values  = hashMapOf(
-                        EContent.USER_IMAGE.toString() to content.USER_IMAGE,
-                        EContent.IMAGE_CONTENT.toString() to content.IMAGE_CONTENT,
-                        EContent.LINK.toString() to content.LINK,
-                        EContent.USER_CODE.toString() to content.USER_CODE,
-                        EContent.USER_NAME.toString() to content.USER_NAME,
-                        EContent.CAPTION.toString() to content.CAPTION,
-                        EContent.TYPE.toString() to content.TYPE,
-                        EContent.TOTAL_LIKE.toString() to content.TOTAL_LIKE,
-                        EContent.KEY.toString() to content.KEY,
-                        EContent.CHANNEL.toString() to content.CHANNEL,
-                        EContent.CREATED_DATE.toString() to content.CREATED_DATE,
-                        EContent.UPDATED_DATE.toString() to content.UPDATED_DATE,
-                        EContent.CREATED_BY.toString() to content.CREATED_BY,
-                        EContent.UPDATED_BY.toString() to content.UPDATED_BY
+                        ERemaja.NAMA.toString() to remaja.NAMA,
+                        ERemaja.KELAS.toString() to remaja.KELAS,
+                        ERemaja.SEKOLAH.toString() to remaja.SEKOLAH,
+                        ERemaja.HOBBY.toString() to remaja.HOBBY,
+                        ERemaja.WARNA_FAV.toString() to remaja.WARNA_FAV,
+                        ERemaja.ALAMAT.toString() to remaja.ALAMAT,
+                        ERemaja.GENDER.toString() to remaja.GENDER,
+                        ERemaja.TEMPAT_LAHIR.toString() to remaja.TEMPAT_LAHIR,
+                        ERemaja.TANGGAL_LAHIR.toString() to remaja.TANGGAL_LAHIR,
+                        ERemaja.NO_TEL.toString() to remaja.NO_TEL,
+                        ERemaja.NOTE.toString() to remaja.NOTE,
+                        ERemaja.IS_PADUS.toString() to remaja.IS_PADUS,
+                        ERemaja.JENIS_SUARA.toString() to remaja.JENIS_SUARA,
+                        ERemaja.IS_PELAYANAN.toString() to remaja.IS_PELAYANAN,
+                        ERemaja.LITURGOS.toString() to remaja.LITURGOS,
+                        ERemaja.PENYAMBUT.toString() to remaja.PENYAMBUT,
+                        ERemaja.PIANIS.toString() to remaja.PIANIS,
+                        ERemaja.GITARIS.toString() to remaja.GITARIS,
+                        ERemaja.LCD.toString() to remaja.LCD,
+                        ERemaja.PENGURUS.toString() to remaja.PENGURUS,
+                        ERemaja.ABSENSI.toString() to remaja.ABSENSI,
+                        ERemaja.KOLEKTOR.toString() to remaja.KOLEKTOR,
+                        ERemaja.CREATED_DATE.toString() to remaja.CREATED_DATE,
+                        ERemaja.UPDATED_DATE.toString() to remaja.UPDATED_DATE,
+                        ERemaja.CREATED_BY.toString() to remaja.CREATED_BY,
+                        ERemaja.UPDATED_BY.toString() to remaja.UPDATED_BY,
+                        ERemaja.IMAGE.toString() to remaja.IMAGE,
+                        ERemaja.ID.toString() to remaja.ID,
+                        ERemaja.STATUS.toString() to remaja.STATUS
                     )
                     database.child(getSinode())
                         .child(getPost())
-                        .child(ETable.CONTENT.toString())
+                        .child(ETable.REMAJA.toString())
                         .child(key.toString())
                         .setValue(values).addOnFailureListener {
                             view.response(it.message.toString())
@@ -76,7 +91,7 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
             }
             database.child(getSinode())
                 .child(getPost())
-                .child(ETable.CONTENT.toString())
+                .child(ETable.REMAJA.toString())
                 .orderByKey()
                 .limitToLast(1)
                 .addListenerForSingleValueEvent(postListener)
@@ -401,20 +416,20 @@ class HomePresenter(private val view: MainView, private val auth: FirebaseAuth, 
     }
 
 
-    fun retrieveContent(){
+    fun retrieveRemajaList(){
         postListener = object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
                 database.removeEventListener(this)
             }
 
             override fun onDataChange(p0: DataSnapshot) {
-                view.loadData(p0, EMessageResult.FETCH_CONTENT_SUCCESS.toString())
+                view.loadData(p0, EMessageResult.FETCH_REMAJA_SUCCESS.toString())
             }
 
         }
         database.child(getSinode())
             .child(getPost())
-            .child(ETable.CONTENT.toString())
+            .child(ETable.REMAJA.toString())
             .addListenerForSingleValueEvent(postListener)
     }
 

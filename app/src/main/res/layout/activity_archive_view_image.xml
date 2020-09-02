@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".archive.ArchiveViewImageActivity">
+
+    <ProgressBar
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:id="@+id/pbArchive"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Loading Failed"
+        android:textColor="@color/colorBlack"
+        android:id="@+id/tvArchiveLoadFailed"
+        android:visibility="gone"/>
 
     <com.jsibbold.zoomage.ZoomageView
         android:layout_width="match_parent"
@@ -19,4 +33,4 @@
         app:zoomage_maxScale="8"
         android:id="@+id/zvArchive"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

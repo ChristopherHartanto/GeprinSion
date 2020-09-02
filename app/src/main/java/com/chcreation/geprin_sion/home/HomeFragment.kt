@@ -10,9 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 
 import com.chcreation.geprin_sion.R
-import com.chcreation.geprin_sion.model.EContent
-import com.chcreation.geprin_sion.model.EMessageResult
-import com.chcreation.geprin_sion.model.Like
+import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.HomePresenter
 import com.chcreation.geprin_sion.util.normalClickAnimation
 import com.chcreation.pointofsale.view.MainView
@@ -23,8 +21,10 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.jetbrains.anko.noButton
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import org.jetbrains.anko.support.v4.*
+import org.jetbrains.anko.yesButton
 
 /**
  * A simple [Fragment] subclass.
@@ -66,9 +66,35 @@ class HomeFragment : Fragment(), MainView {
         rvAdapter = HomeRecyclerViewAdapter(ctx,
             mAuth.currentUser!!.uid,requireActivity(),contentItems){ it, link, edit->
             if (edit){
-                editContent = true
-                position = it
-                startActivity(intentFor<AddContentActivity>())
+                val options = mutableListOf("Edit", "Delete")
+
+
+                selector("Options",options) {
+                        dialogInterface, i ->
+                    when(i){
+                        0 -> {
+                            editContent = true
+                            position = it
+                            startActivity(intentFor<AddContentActivity>())
+                        }
+                        1 -> {
+                            alert("Are You Sure Want to Delete"){
+                                title = "Delete"
+                                yesButton {  di->
+                                    presenter.deleteContent(contentItems[it].KEY.toString()){success->
+                                        if (success){
+                                            toast("Delete Success")
+                                            presenter.retrieveLikes()
+                                        }else{
+                                            toast("Failed to Delete")
+                                        }
+                                    }
+                                }
+                                noButton {  }
+                            }.show()
+                        }
+                    }
+                }
             }
             else if (link == ""){
                 if (onLike){
@@ -173,7 +199,8 @@ class HomeFragment : Fragment(), MainView {
                 if (dataSnapshot.exists()){
                     for (data in dataSnapshot.children){
                         val item = data.getValue(Content::class.java)
-                        if (item != null){
+                        if (item != null && item.STATUS == EStatusCode.ACTIVE.toString()
+                            && (item.CHANNEL == EChannel.All.toString() || item.CHANNEL == EChannel.Umum.toString())){
                             for (likeItem in likeItems){
                                 if (likeItem.CONTENT_ID == item.KEY)
                                     item.LIKE = true
