@@ -13,6 +13,7 @@
         android:layout_weight="1.2"
         android:layout_margin="10dp"
         android:elevation="10dp"
+        android:id="@+id/layoutRemajaHeader"
         app:cardCornerRadius="10dp">
 
         <LinearLayout
@@ -26,6 +27,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical"
+                android:visibility="gone"
                 android:id="@+id/llRemajaPelayanan">
 
                 <de.hdodenhof.circleimageview.CircleImageView
@@ -96,11 +98,18 @@
 
     </androidx.cardview.widget.CardView>
 
+    <ProgressBar
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:id="@+id/pbRemaja"/>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="8"
         android:id="@+id/srRemaja">
+
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.home.HomeFragment.Companion.editContent
@@ -24,6 +25,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.android.synthetic.main.fragment_jemaat.*
 import kotlinx.android.synthetic.main.fragment_remaja.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -221,6 +223,7 @@ class RemajaFragment : Fragment(), MainView {
                 contentItems.reverse()
                 rvAdapter.notifyDataSetChanged()
                 srRemaja.isRefreshing = false
+                pbRemaja.visibility = View.GONE
             }
             if (response == EMessageResult.FETCH_LIKE_SUCCESS.toString()){
                 likeItems.clear()

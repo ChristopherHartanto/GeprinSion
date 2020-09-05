@@ -23,6 +23,7 @@ data class Remaja(
     var PENGURUS: Boolean? = false,
     var ABSENSI: Boolean? = false,
     var KOLEKTOR: Boolean? = false,
+    var PADUS: Boolean? = false,
     var CREATED_DATE: String? = "",
     var UPDATED_DATE: String? = "",
     var CREATED_BY: String? = "",

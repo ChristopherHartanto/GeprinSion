@@ -16,6 +16,8 @@ import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -102,6 +104,7 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
         setContentView(R.layout.activity_manage_jemaat)
 
         supportActionBar?.title = "Edit Jemaat"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -159,6 +162,17 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
         val id = intent.extras?.getString(EJemaat.ID.toString(),"")
         if (id != null) {
             presenter.retrieveJemaatByKey(currentJemaatKey.toString())
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            android.R.id.home ->{
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -619,6 +633,8 @@ class ManageJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
                     fetchData()
                 }
             }
+            pbMJemaat.visibility = View.GONE
+            layoutMJemaat.visibility = View.VISIBLE
         }
     }
 

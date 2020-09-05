@@ -34,6 +34,8 @@ class JemaatDetailActivity : AppCompatActivity(), MainView,DaerahIndonesiaView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_jemaat_detail)
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
         presenter = JemaatPresenter(this,this,mAuth,mDatabase, this)
@@ -86,6 +88,10 @@ class JemaatDetailActivity : AppCompatActivity(), MainView,DaerahIndonesiaView {
             }
             R.id.action_chat_wa ->{
                 intentWhatsapp(currentJemaat.NO_TEL.toString())
+                true
+            }
+            android.R.id.home ->{
+                finish()
                 true
             }
             else -> super.onOptionsItemSelected(item)

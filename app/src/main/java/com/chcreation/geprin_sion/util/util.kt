@@ -2,14 +2,18 @@ package com.chcreation.geprin_sion.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.view.View
 import android.view.animation.AlphaAnimation
+import android.view.animation.TranslateAnimation
+import androidx.core.view.marginBottom
+import com.chcreation.geprin_sion.main.ErrorActivity
 import com.chcreation.geprin_sion.model.EDataType
 import com.chcreation.geprin_sion.model.ESharedPreference
-import com.chcreation.geprin_sion.main.ErrorActivity
 import org.jetbrains.anko.startActivity
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 private lateinit var sharedPreference: SharedPreferences
 
@@ -66,6 +70,33 @@ fun setDataPreference(context: Context,key: String, value: Any, dataType : EData
 }
 
 fun normalClickAnimation() : AlphaAnimation = AlphaAnimation(10F,0.5F)
+
+fun slideUp(view: View) {
+    view.setVisibility(View.VISIBLE)
+    val animate = TranslateAnimation(
+        0F,  // fromXDelta
+        0F,  // toXDelta
+        view.height.toFloat() + view.marginBottom.toFloat(),  // fromYDelta
+        0F
+    ) // toYDelta
+    animate.duration = 500
+    animate.fillAfter = true
+    view.startAnimation(animate)
+}
+
+// slide the view from its current position to below itself
+fun slideDown(view: View) {
+    val animate = TranslateAnimation(
+        0F,  // fromXDelta
+        0F,  // toXDelta
+        0F,  // fromYDelta
+        view.height.toFloat() + view.marginBottom.toFloat()
+    ) // toYDelta
+    animate.duration = 500
+    animate.fillAfter = true
+    view.startAnimation(animate)
+}
+
 
 fun dateFormat() : SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 

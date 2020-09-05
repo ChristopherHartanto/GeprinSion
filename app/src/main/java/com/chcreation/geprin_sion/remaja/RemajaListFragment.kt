@@ -9,9 +9,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.jemaat.JemaatRecyclerViewAdapter
+import com.chcreation.geprin_sion.model.ERemaja
 import com.chcreation.geprin_sion.remaja.AbsentActivity.Companion.remajaItems
 import kotlinx.android.synthetic.main.fragment_remaja_list.*
 import org.jetbrains.anko.support.v4.ctx
+import org.jetbrains.anko.support.v4.intentFor
+import org.jetbrains.anko.support.v4.startActivity
 
 /**
  * A simple [Fragment] subclass.
@@ -32,10 +35,11 @@ class RemajaListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = RemajaRecyclerViewAdapter(ctx,remajaItems){
-
+            startActivity(intentFor<RemajaDetailActivity>(ERemaja.ID.toString() to remajaItems[it].ID))
         }
         rvRemajaList.layoutManager = LinearLayoutManager(ctx)
         rvRemajaList.adapter = adapter
     }
+
 
 }

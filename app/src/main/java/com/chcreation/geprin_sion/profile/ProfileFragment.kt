@@ -599,6 +599,8 @@ class ProfileFragment : Fragment(), MainView, DaerahIndonesiaView {
                         presenter.retrieveProvinsi()
                     }
                 }
+                pbProfile.visibility = View.GONE
+                layoutProfile.visibility = View.VISIBLE
                 btnProfileSave.isEnabled = true
             }
         }

@@ -25,6 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.jemaat.JemaatFilterActivity.Companion.selectedBaptis
@@ -39,12 +40,15 @@ import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.JemaatPresenter
 import com.chcreation.geprin_sion.util.dateFormat
 import com.chcreation.geprin_sion.util.normalClickAnimation
+import com.chcreation.geprin_sion.util.slideDown
+import com.chcreation.geprin_sion.util.slideUp
 import com.chcreation.geprin_sion.view.DaerahIndonesiaView
 import com.chcreation.pointofsale.view.MainView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_jemaat.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -70,6 +74,8 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
     private var filterJemaatKeys = mutableListOf<Int>()
     private var searchFilter = ""
     private var WRITE_PERMISION = 101
+    private var isSlideUp = true
+    private var isSlideDown = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -97,6 +103,25 @@ class JemaatFragment : Fragment(), MainView, DaerahIndonesiaView {
 //        linearLayoutManager.stackFromEnd = true
         rvJemaat.adapter = adapter
         rvJemaat.layoutManager = LinearLayoutManager(ctx)
+
+        rvJemaat.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (dy > 0){
+                    if (isSlideDown){
+                        slideDown(fabJemaat)
+                        isSlideDown = false
+                    }
+                    isSlideUp = true
+                }else{
+                    if (isSlideUp)
+                        slideUp(fabJemaat)
+                    isSlideUp = false
+                    isSlideDown = true
+                }
+            }
+
+        })
 
         fabJemaat.onClick {
             val options = mutableListOf("Add New","Export XLSX")

@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.StrictMode
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -70,6 +72,7 @@ class JemaatFilterActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
         setContentView(R.layout.activity_jemaat_filter)
 
         supportActionBar?.title = "Filter"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -100,6 +103,17 @@ class JemaatFilterActivity : AppCompatActivity(), MainView, DaerahIndonesiaView 
     override fun onBackPressed() {
         clearFilterData()
         super.onBackPressed()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            android.R.id.home ->{
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun clearFilterData(){

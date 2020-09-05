@@ -23,7 +23,13 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".remaja.AddRemajaActivity"></activity>
+        <activity android:name=".remaja.statistic.ManageAbsentRemajaActivity"></activity>
+        <activity android:name=".remaja.statistic.StatisticAbsentRemajaActivity" />
+        <activity android:name=".remaja.statistic.StatiscticRemajaActivity" />
+        <activity android:name=".remaja.NewAbsentActivity" />
+        <activity android:name=".remaja.ManageRemajaActivity" />
+        <activity android:name=".remaja.RemajaDetailActivity" />
+        <activity android:name=".remaja.AddRemajaActivity" />
         <activity android:name=".remaja.ForumActivity" />
         <activity android:name=".remaja.AbsentActivity" />
         <activity android:name=".archive.ArchiveViewImageActivity" />

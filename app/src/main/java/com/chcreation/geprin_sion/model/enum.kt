@@ -7,7 +7,8 @@ enum class ETable{
     CONTENT,
     MERCHANT,
     LIKE,
-    REMAJA
+    REMAJA,
+    ABSENT,
 }
 
 enum class EAbout{
@@ -115,10 +116,34 @@ enum class ERemaja{
     PENGURUS,
     ABSENSI,
     KOLEKTOR,
+    PADUS,
     IMAGE,
     ID,
     KEY,
     STATUS
+}
+
+enum class EAbsent{
+    CREATED_DATE,
+    UPDATED_DATE,
+    CREATED_BY,
+    UPDATED_BY,
+    ABSENT_DATE,
+    DETAIL,
+    CHANNEL,
+    TYPE,
+    KEY,
+    STATUS
+}
+
+enum class EAbsentType{
+    All,
+    PADUS
+}
+
+enum class EAbsentDetail{
+    NAME,
+    PRESENT
 }
 
 enum class ELike{
@@ -198,6 +223,13 @@ enum class EBaptis{
     No,
 }
 
+enum class EJenisSuara{
+    SOPRAN,
+    ALTO,
+    TENOR,
+    BASS
+}
+
 enum class EGolDarah{
     All,
     A,
@@ -219,7 +251,14 @@ enum class EMessageResult{
     FETCH_USER_SUCCESS,
     FETCH_ADMIN_SUCCESS,
     FETCH_USER_LIST_SUCCESS,
+    FETCH_REMAJA_BY_KEY_SUCCESS,
+    FETCH_ABSENT_SUCCESS,
     FETCH_CONTENT_SUCCESS
+}
+
+enum class EResultCode(var value:Int){
+    SUCCESS(1),
+    FAILED(2)
 }
 
 enum class EPaymentMethod{

@@ -6,13 +6,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.HomePresenter
 import com.chcreation.geprin_sion.util.normalClickAnimation
+import com.chcreation.geprin_sion.util.slideDown
+import com.chcreation.geprin_sion.util.slideUp
 import com.chcreation.pointofsale.view.MainView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -45,6 +50,8 @@ class HomeFragment : Fragment(), MainView {
     private lateinit var presenter: HomePresenter
     private lateinit var rvAdapter: HomeRecyclerViewAdapter
     private var onLike = true
+    private var isSlideUp = true
+    private var isSlideDown = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,6 +69,39 @@ class HomeFragment : Fragment(), MainView {
         presenter = HomePresenter(this,mAuth,mDatabase, ctx)
 
         srHome.setColorSchemeColors(Color.BLUE, Color.RED)
+        rvHome.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (dy > 0){
+                    if (isSlideDown){
+                        slideDown(fbHome)
+                        isSlideDown = false
+                    }
+                    isSlideUp = true
+                }else{
+                    if (isSlideUp)
+                        slideUp(fbHome)
+                    isSlideUp = false
+                    isSlideDown = true
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+
+                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+                    // Do something
+                } else if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+//                    if (isSlideDown){
+//                        slideDown(fbHome)
+//                        isSlideDown = false
+//                    }
+                } else {
+                   // slideUp(fbHome)
+                }
+            }
+
+        })
 
         rvAdapter = HomeRecyclerViewAdapter(ctx,
             mAuth.currentUser!!.uid,requireActivity(),contentItems){ it, link, edit->

@@ -35,10 +35,12 @@ class KidungFragment : Fragment() {
         wvKidung.webViewClient = WebViewClient()
         wvKidung.webChromeClient = object : WebChromeClient(){
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                loading.visibility = View.VISIBLE
-                loading.progress = newProgress
-                if(newProgress == 100){
-                    loading.visibility = View.GONE
+                if (isVisible && isResumed){
+                    loading.visibility = View.VISIBLE
+                    loading.progress = newProgress
+                    if(newProgress == 100){
+                        loading.visibility = View.GONE
+                    }
                 }
                 super.onProgressChanged(view, newProgress)
             }

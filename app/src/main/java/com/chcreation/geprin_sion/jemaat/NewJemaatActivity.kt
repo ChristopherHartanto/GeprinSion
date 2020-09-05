@@ -16,6 +16,8 @@ import android.os.StrictMode
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -94,6 +96,7 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
         setContentView(R.layout.activity_new_jemaat)
 
         supportActionBar?.title = "New Jemaat"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -156,6 +159,17 @@ class NewJemaatActivity : AppCompatActivity(), MainView, DaerahIndonesiaView {
         super.onStart()
 
         presenter.retrieveProvinsi()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            android.R.id.home ->{
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun saveJemaat(image: String?){

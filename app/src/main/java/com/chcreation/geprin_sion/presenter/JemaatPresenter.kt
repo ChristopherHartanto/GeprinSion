@@ -132,7 +132,7 @@ class JemaatPresenter(private val view: MainView, private val diView: DaerahIndo
                 .child(getPost())
                 .child(ETable.JEMAAT.toString())
                 .child(key)
-                .setValue(values).addOnFailureListener {
+                .updateChildren(values).addOnFailureListener {
                     view.response(it.message.toString())
                 }
                 .addOnSuccessListener {

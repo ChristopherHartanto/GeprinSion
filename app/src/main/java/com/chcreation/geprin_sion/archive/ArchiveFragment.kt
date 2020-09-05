@@ -61,7 +61,7 @@ class ArchiveFragment : Fragment(), MainView {
 
         srArchive.setColorSchemeColors(Color.BLUE, Color.RED)
         rvAdapter = ArchiveRecylcerViewAdapter(ctx,filteredContentItems){
-            startActivity(intentFor<ArchiveViewImageActivity>(EContent.IMAGE_CONTENT.toString() to contentItems[it].IMAGE_CONTENT))
+            startActivity(intentFor<ArchiveViewImageActivity>(EContent.IMAGE_CONTENT.toString() to filteredContentItems[it].IMAGE_CONTENT))
         }
 
         llArchiveFilter.onClick {

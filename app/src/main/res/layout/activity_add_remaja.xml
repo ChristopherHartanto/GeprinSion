@@ -54,7 +54,7 @@
                         <EditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/etJemaatName"
+                            android:id="@+id/etRemajaName"
                             android:hint="Nama"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,7 +76,7 @@
                             android:layout_width="0dp"
                             android:layout_height="40dp"
                             android:layout_weight="2"
-                            android:id="@+id/spJemaatJenisKelamin"/>
+                            android:id="@+id/spRemajaJenisKelamin"/>
 
                     </LinearLayout>
 
@@ -101,7 +101,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:hint="Tempat Lahir"
-                                android:id="@+id/etJemaatTempatLahir"/>
+                                android:id="@+id/etRemajaTempatLahir"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                     </LinearLayout>
@@ -127,7 +127,7 @@
                             android:gravity="center_vertical"
                             android:textColor="@color/colorBlack"
                             android:hint="dd MMMM yyyy"
-                            android:id="@+id/tvJemaatTanggalLahir"/>
+                            android:id="@+id/tvRemajaTanggalLahir"/>
 
                     </LinearLayout>
 
@@ -141,7 +141,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="No Hp"
-                            android:id="@+id/tvJemaatNoHp"
+                            android:id="@+id/tvRemajaNoHp"
                             android:textColor="@color/colorBlack"/>
 
                         <com.google.android.material.textfield.TextInputLayout
@@ -151,7 +151,7 @@
                             <EditText
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
-                                android:id="@+id/etJemaatNoHp"
+                                android:id="@+id/etRemajaNoHp"
                                 android:inputType="number"
                                 android:hint="No Hp"/>
                         </com.google.android.material.textfield.TextInputLayout>
@@ -179,7 +179,6 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:id="@+id/etRemajaSekolah"
-                                android:inputType="number"
                                 android:hint="Sekolah"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -206,7 +205,6 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:id="@+id/etRemajaKelas"
-                                android:inputType="number"
                                 android:hint="Kelas"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -233,7 +231,6 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:id="@+id/etRemajaHobby"
-                                android:inputType="number"
                                 android:hint="Hobby"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -260,8 +257,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="40dp"
                                 android:id="@+id/etRemajaWarnaFav"
-                                android:inputType="number"
-                                android:hint="No Hp"/>
+                                android:hint="Warna Favorit"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                     </LinearLayout>
@@ -272,7 +268,7 @@
                         <EditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/etJemaatAlamat"
+                            android:id="@+id/etRemajaAlamat"
                             android:maxLines="5"
                             android:inputType="textMultiLine"
                             android:scrollbars="vertical"
@@ -286,7 +282,7 @@
                         <EditText
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/etJemaatNote"
+                            android:id="@+id/etRemajaNote"
                             android:maxLines="5"
                             android:inputType="textMultiLine"
                             android:scrollbars="vertical"
@@ -399,6 +395,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
+                        android:visibility="gone"
                         android:id="@+id/layoutRemajaPelayanan1">
 
                         <TextView
@@ -411,7 +408,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaLiturgos"/>
 
                         <TextView
                             android:layout_width="0dp"
@@ -423,7 +421,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaPenyambut"/>
 
                     </LinearLayout>
 
@@ -431,7 +430,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:id="@+id/layoutRemajaPelayanan2">
+                        android:id="@+id/layoutRemajaPelayanan2"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="0dp"
@@ -443,7 +443,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaPianis"/>
 
                         <TextView
                             android:layout_width="0dp"
@@ -455,7 +456,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaAbsensi"/>
 
                     </LinearLayout>
 
@@ -463,7 +465,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:id="@+id/layoutRemajaPelayanan3">
+                        android:id="@+id/layoutRemajaPelayanan3"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="0dp"
@@ -475,7 +478,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaGitaris"/>
 
                         <TextView
                             android:layout_width="0dp"
@@ -487,7 +491,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaKolektor"/>
 
                     </LinearLayout>
 
@@ -495,7 +500,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:id="@+id/layoutRemajaPelayanan3">
+                        android:id="@+id/layoutRemajaPelayanan4"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="0dp"
@@ -507,7 +513,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaLCD"/>
 
                         <TextView
                             android:layout_width="0dp"
@@ -519,7 +526,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="1"/>
+                            android:layout_weight="1"
+                            android:id="@+id/cbRemajaPadus"/>
 
                     </LinearLayout>
 
@@ -527,7 +535,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:id="@+id/layoutRemajaPelayanan">
+                        android:id="@+id/layoutRemajaPelayanan5"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="0dp"
@@ -539,7 +548,8 @@
                         <CheckBox
                             android:layout_width="0dp"
                             android:layout_height="40dp"
-                            android:layout_weight="3"/>
+                            android:layout_weight="3"
+                            android:id="@+id/cbRemajaPengurus"/>
 
 
                     </LinearLayout>

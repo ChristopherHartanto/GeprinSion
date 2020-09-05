@@ -23,11 +23,12 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
 import com.chcreation.geprin_sion.R
 import com.chcreation.geprin_sion.model.*
 import com.chcreation.geprin_sion.presenter.RemajaPresenter
 import com.chcreation.geprin_sion.util.dateFormat
-import com.chcreation.geprin_sion.util.normalClickAnimation
 import com.chcreation.geprin_sion.util.showError
 import com.chcreation.geprin_sion.util.simpleDateFormat
 import com.chcreation.geprin_sion.view.TransactionInterface
@@ -38,19 +39,19 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.activity_add_remaja.*
+import kotlinx.android.synthetic.main.activity_manage_remaja.*
+import kotlinx.android.synthetic.main.activity_remaja_detail.*
+import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onCheckedChange
 import org.jetbrains.anko.sdk27.coroutines.onClick
-import org.jetbrains.anko.selector
-import org.jetbrains.anko.toast
 import java.io.File
 import java.io.IOException
 import java.util.*
 
-class AddRemajaActivity : AppCompatActivity(), MainView {
+class ManageRemajaActivity : AppCompatActivity(), MainView {
 
     private var cal = Calendar.getInstance()
     private lateinit var tanggalLahirListener : DatePickerDialog.OnDateSetListener
@@ -58,8 +59,9 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
     private var genderItems = arrayListOf(EGender.Pria.toString(), EGender.Perempuan.toString())
     private var selectedGender = EGender.Pria.toString()
     private lateinit var spJenisSuaraAdapter: ArrayAdapter<String>
-    private var jenisSuaraItems = arrayListOf(EJenisSuara.SOPRAN.toString(), EJenisSuara.ALTO.toString(),
-        EJenisSuara.TENOR.toString(),EJenisSuara.BASS.toString())
+    private var jenisSuaraItems = arrayListOf(
+        EJenisSuara.SOPRAN.toString(), EJenisSuara.ALTO.toString(),
+        EJenisSuara.TENOR.toString(), EJenisSuara.BASS.toString())
     private var selectedJenisSuara = EJenisSuara.SOPRAN.toString()
     private lateinit var storage: StorageReference
     private var PICK_IMAGE_CAMERA  = 111
@@ -67,72 +69,72 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
     private var PICK_IMAGE_GALLERY = 222
     private var READ_PERMISION = 202
     private var filePath: Uri? = null
-    private var remajaId = ""
+    private lateinit var mAuth: FirebaseAuth
     private lateinit var mDatabase : DatabaseReference
     private lateinit var presenter: RemajaPresenter
-    private lateinit var mAuth: FirebaseAuth
+    private var currentRemaja = Remaja()
+    private var remajaKey = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_remaja)
+        setContentView(R.layout.activity_manage_remaja)
 
-        supportActionBar?.title = "New Remaja"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Edit Remaja"
 
         mAuth = FirebaseAuth.getInstance()
         mDatabase = FirebaseDatabase.getInstance().reference
-        presenter = RemajaPresenter(this,mAuth,mDatabase, this)
-        storage = FirebaseStorage.getInstance().reference
-        remajaId = generateRemajaId()
+        presenter = RemajaPresenter(this,mAuth,mDatabase,this)
         initDateListener()
         initSpinner()
 
-        swRemajaPadus.onCheckedChange { buttonView, isChecked ->
-            if (swRemajaPadus.isChecked){
-                layoutRemajaPadus.visibility = View.VISIBLE
+        remajaKey = intent.extras!!.getString(ERemaja.ID.toString(),"")
+
+        presenter.retrieveRemajaByKey(remajaKey)
+
+        swRemajaMPadus.onCheckedChange { buttonView, isChecked ->
+            if (swRemajaMPadus.isChecked){
+                layoutRemajaMPadus.visibility = View.VISIBLE
             }else{
-                layoutRemajaPadus.visibility = View.GONE
+                layoutRemajaMPadus.visibility = View.GONE
             }
         }
 
-        swRemajaPelayanan.onCheckedChange { buttonView, isChecked ->
-            if (swRemajaPelayanan.isChecked){
-                layoutRemajaPelayanan1.visibility = View.VISIBLE
-                layoutRemajaPelayanan2.visibility = View.VISIBLE
-                layoutRemajaPelayanan3.visibility = View.VISIBLE
-                layoutRemajaPelayanan4.visibility = View.VISIBLE
-                layoutRemajaPelayanan5.visibility = View.VISIBLE
+        swRemajaMPelayanan.onCheckedChange { buttonView, isChecked ->
+            if (swRemajaMPelayanan.isChecked){
+                layoutRemajaMPelayanan1.visibility = View.VISIBLE
+                layoutRemajaMPelayanan2.visibility = View.VISIBLE
+                layoutRemajaMPelayanan3.visibility = View.VISIBLE
+                layoutRemajaMPelayanan4.visibility = View.VISIBLE
+                layoutRemajaMPelayanan5.visibility = View.VISIBLE
             }else{
-                layoutRemajaPelayanan1.visibility = View.GONE
-                layoutRemajaPelayanan2.visibility = View.GONE
-                layoutRemajaPelayanan3.visibility = View.GONE
-                layoutRemajaPelayanan4.visibility = View.GONE
-                layoutRemajaPelayanan5.visibility = View.GONE
+                layoutRemajaMPelayanan1.visibility = View.GONE
+                layoutRemajaMPelayanan2.visibility = View.GONE
+                layoutRemajaMPelayanan3.visibility = View.GONE
+                layoutRemajaMPelayanan4.visibility = View.GONE
+                layoutRemajaMPelayanan5.visibility = View.GONE
             }
         }
 
-        ivRemajaImage.onClick {
+        ivRemajaMImage.onClick {
             selectImage()
         }
 
-        btnRemajaSave.onClick {
-            btnRemajaSave.startAnimation(normalClickAnimation())
-
+        btnRemajaMSave.onClick {
             if (filePath != null)
                 uploadImage()
             else
                 saveRemaja("")
         }
 
-        tvRemajaTanggalLahir.onClick {
-            DatePickerDialog(this@AddRemajaActivity,
+        tvRemajaMTanggalLahir.onClick {
+            DatePickerDialog(this@ManageRemajaActivity,
                 tanggalLahirListener,
                 cal.get(Calendar.YEAR),
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)).show()
         }
     }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle item selection
         return when (item.itemId) {
@@ -144,47 +146,50 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
         }
     }
 
-    private fun saveRemaja(image: String){
+    private fun saveRemaja(uploadImage: String){
         loading()
-        val name = etRemajaName.text.toString()
-        val alamat = etRemajaAlamat.text.toString()
-        val hobby = etRemajaHobby.text.toString()
-        val sekolah = etRemajaSekolah.text.toString()
-        val kelas = etRemajaKelas.text.toString()
-        val favWarna = etRemajaWarnaFav.text.toString()
+        val name = etRemajaMName.text.toString()
+        val alamat = etRemajaMAlamat.text.toString()
+        val hobby = etRemajaMHobby.text.toString()
+        val sekolah = etRemajaMSekolah.text.toString()
+        val kelas = etRemajaMKelas.text.toString()
+        val favWarna = etRemajaMWarnaFav.text.toString()
         val gender = selectedGender
-        val tempatLahir = etRemajaTempatLahir.text.toString()
-        val tanggalLahir = tvRemajaTanggalLahir.text.toString()
-        val noTel = etRemajaNoHp.text.toString()
-        val note = etRemajaNote.text.toString()
-        val isPadus = swRemajaPadus.isChecked
+        val tempatLahir = etRemajaMTempatLahir.text.toString()
+        val tanggalLahir = tvRemajaMTanggalLahir.text.toString()
+        val noTel = etRemajaMNoHp.text.toString()
+        val note = etRemajaMNote.text.toString()
+        val isPadus = swRemajaMPadus.isChecked
         val jenisSuara = selectedJenisSuara
-        val isPelayanan = swRemajaPelayanan.isChecked
-        val isLiturgos = cbRemajaLiturgos.isChecked
-        val isKolektor = cbRemajaKolektor.isChecked
-        val isLcd = cbRemajaLCD.isChecked
-        val isPenyambut = cbRemajaPenyambut.isChecked
-        val isAbsensi = cbRemajaAbsensi.isChecked
-        val isGitaris = cbRemajaGitaris.isChecked
-        val isPengurus = cbRemajaPengurus.isChecked
-        val isPianis = cbRemajaPianis.isChecked
-        val isPadus1 = cbRemajaPadus.isChecked
+        val isPelayanan = swRemajaMPelayanan.isChecked
+        val isLiturgos = cbRemajaMLiturgos.isChecked
+        val isKolektor = cbRemajaMKolektor.isChecked
+        val isLcd = cbRemajaMLCD.isChecked
+        val isPenyambut = cbRemajaMPenyambut.isChecked
+        val isAbsensi = cbRemajaMAbsensi.isChecked
+        val isGitaris = cbRemajaMGitaris.isChecked
+        val isPengurus = cbRemajaMPengurus.isChecked
+        val isPianis = cbRemajaMPianis.isChecked
+        val isPadus1 = cbRemajaMPadus.isChecked
 
-        presenter.createRemaja(object : TransactionInterface{
+        val image = if (uploadImage != "") uploadImage else currentRemaja.IMAGE
+
+        presenter.updateRemaja(object : TransactionInterface {
             override fun handleData(data: Any, resultCode: Int) {
                 endLoading()
 
                 if (resultCode == EResultCode.SUCCESS.value){
-                    toast("Success Create")
+                    toast("Success Update")
                     finish()
                 }else
-                    toast("Create Failed")
+                    toast("Update Failed")
             }
 
         },Remaja(name,gender,tempatLahir,tanggalLahir,noTel,alamat,kelas,sekolah,hobby,favWarna,note,
             isPadus,jenisSuara,isPelayanan,isLiturgos,isPenyambut,isPianis,isGitaris,isLcd,isPengurus,isAbsensi,isKolektor,isPadus1,
-            dateFormat().format(Date()),dateFormat().format(Date()),
-            mAuth.currentUser!!.uid,mAuth.currentUser!!.uid,image,remajaId,EStatusCode.ACTIVE.toString()))
+            currentRemaja.CREATED_DATE,dateFormat().format(Date()),
+            currentRemaja.CREATED_BY,mAuth.currentUser!!.uid,image,currentRemaja.ID.toString(),currentRemaja.STATUS),
+            currentRemaja.ID.toString())
     }
 
     private fun uploadImage(){
@@ -192,7 +197,7 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
             loading()
 
             val ref = storage.child(ETable.REMAJA.toString())
-                .child(remajaId)
+                .child(currentRemaja.ID.toString())
 
             val uploadTask = ref.putFile(filePath!!)
 
@@ -251,9 +256,9 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
                 dialogInterface, i ->
             when(i){
                 0 -> {
-                    if (ContextCompat.checkSelfPermission(this@AddRemajaActivity, android.Manifest.permission.CAMERA)
+                    if (ContextCompat.checkSelfPermission(this@ManageRemajaActivity, android.Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED)
-                        ActivityCompat.requestPermissions(this@AddRemajaActivity,
+                        ActivityCompat.requestPermissions(this@ManageRemajaActivity,
                             arrayOf(android.Manifest.permission.CAMERA),CAMERA_PERMISSION
                         )
                     else
@@ -261,9 +266,9 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
 
                 }
                 1 -> {
-                    if (ContextCompat.checkSelfPermission(this@AddRemajaActivity, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                    if (ContextCompat.checkSelfPermission(this@ManageRemajaActivity, android.Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED)
-                        ActivityCompat.requestPermissions(this@AddRemajaActivity,
+                        ActivityCompat.requestPermissions(this@ManageRemajaActivity,
                             arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE,android.Manifest.permission.WRITE_EXTERNAL_STORAGE),READ_PERMISION
                         )
                     else
@@ -318,7 +323,7 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
                         contentResolver,
                         filePath
                     )
-                ivRemajaImage.setImageBitmap(rotateImage(bitmap))
+                ivRemajaMImage.setImageBitmap(rotateImage(bitmap))
             } catch (e: Exception) {
                 filePath = null
                 showError(this,e.message.toString())
@@ -335,7 +340,7 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
                         contentResolver,
                         filePath
                     )
-                ivRemajaImage.setImageBitmap(rotateImage(bitmap))
+                ivRemajaMImage.setImageBitmap(rotateImage(bitmap))
             } catch (e: IOException) { // Log the exception
                 showError(this,e.message.toString())
                 e.printStackTrace()
@@ -409,18 +414,15 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
         cursor.moveToFirst();
         return cursor.getString(column_index);
     }
-    private fun generateRemajaId() : String{
-        return "R${mDatabase.push().key.toString()}"
-    }
 
     private fun loading(){
-        pbRemaja.visibility = View.VISIBLE
-        btnRemajaSave.isEnabled = false
+        pbRemajaM.visibility = View.VISIBLE
+        btnRemajaMSave.isEnabled = false
     }
 
     private fun endLoading(){
-        pbRemaja.visibility = View.GONE
-        btnRemajaSave.isEnabled = true
+        pbRemajaM.visibility = View.GONE
+        btnRemajaMSave.isEnabled = true
     }
 
     private fun initDateListener(){
@@ -429,7 +431,7 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
                 cal.set(Calendar.YEAR, year)
                 cal.set(Calendar.MONTH, monthOfYear)
                 cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                tvRemajaTanggalLahir.text = simpleDateFormat().format(cal.time)
+                tvRemajaMTanggalLahir.text = simpleDateFormat().format(cal.time)
             }
     }
 
@@ -437,8 +439,8 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
         spGenderAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,genderItems)
         spGenderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spRemajaJenisKelamin.adapter = spGenderAdapter
-        spRemajaJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spRemajaMJenisKelamin.adapter = spGenderAdapter
+        spRemajaMJenisKelamin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -453,13 +455,13 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
             }
 
         }
-        spRemajaJenisKelamin.gravity = Gravity.CENTER
+        spRemajaMJenisKelamin.gravity = Gravity.CENTER
 
         spJenisSuaraAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item,jenisSuaraItems)
         spJenisSuaraAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        spRemajaJenisSuara.adapter = spJenisSuaraAdapter
-        spRemajaJenisSuara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        spRemajaMJenisSuara.adapter = spJenisSuaraAdapter
+        spRemajaMJenisSuara.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
@@ -474,14 +476,58 @@ class AddRemajaActivity : AppCompatActivity(), MainView {
             }
 
         }
-        spRemajaJenisSuara.gravity = Gravity.CENTER
+        spRemajaMJenisSuara.gravity = Gravity.CENTER
+    }
+
+    private fun fetchData(){
+        etRemajaMName.setText(currentRemaja.NAMA)
+        supportActionBar?.title = currentRemaja.NAMA
+        spRemajaMJenisKelamin.setSelection(genderItems.indexOf(currentRemaja.GENDER))
+        spRemajaMJenisSuara.setSelection(jenisSuaraItems.indexOf(currentRemaja.JENIS_SUARA))
+
+        swRemajaMPadus.isChecked = currentRemaja.IS_PADUS!!
+        etRemajaMAlamat.setText(currentRemaja.ALAMAT)
+        etRemajaMHobby.setText(currentRemaja.HOBBY)
+        etRemajaMTempatLahir.setText(currentRemaja.TEMPAT_LAHIR)
+        tvRemajaMTanggalLahir.text = currentRemaja.TANGGAL_LAHIR
+        etRemajaMSekolah.setText(currentRemaja.SEKOLAH)
+        etRemajaMKelas.setText(currentRemaja.KELAS)
+        etRemajaMWarnaFav.setText(currentRemaja.WARNA_FAV)
+        etRemajaMNoHp.setText(currentRemaja.NO_TEL)
+        etRemajaMNote.setText(currentRemaja.NOTE)
+
+        if (currentRemaja.IMAGE != "")
+            Glide.with(this).load(currentRemaja.IMAGE).into(ivRemajaMImage)
+
+        cbRemajaMAbsensi.isChecked = currentRemaja.ABSENSI!!
+        cbRemajaMGitaris.isChecked = currentRemaja.GITARIS!!
+        cbRemajaMPianis.isChecked = currentRemaja.PIANIS!!
+        cbRemajaMLCD.isChecked = currentRemaja.LCD!!
+        cbRemajaMKolektor.isChecked = currentRemaja.KOLEKTOR!!
+        cbRemajaMLiturgos.isChecked = currentRemaja.LITURGOS!!
+        cbRemajaMPadus.isChecked = currentRemaja.IS_PADUS!!
+        cbRemajaMPenyambut.isChecked = currentRemaja.PENYAMBUT!!
+        cbRemajaMPengurus.isChecked = currentRemaja.PENGURUS!!
     }
 
     override fun loadData(dataSnapshot: DataSnapshot, response: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (response == EMessageResult.FETCH_REMAJA_BY_KEY_SUCCESS.toString()){
+            if (dataSnapshot.exists()){
+                pbRemajaM.visibility = View.GONE
+                for (data in dataSnapshot.children){
+                    val item = data.getValue(Remaja::class.java)
+                    if (item != null) {
+                        currentRemaja = item
+                        fetchData()
+                    }
+                }
+            }
+            pbRemajaM.visibility = View.GONE
+            layoutRemajaM.visibility = View.VISIBLE
+        }
     }
 
     override fun response(message: String) {
-        endLoading()
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
